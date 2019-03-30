@@ -12,13 +12,13 @@ module regfile(input clk,
                output [31:0] ra);
     reg [31:0] rf [31:0];
     integer i;
-    always @ (posedge clk or posedge reset)
+    always @ (posedge clk)
         begin
-            if(regWriteEn) rf[regWriteAddr] <= regWriteData;
-            if(jal) rf[31] <= pcplus4;
             if(reset)
-                for(i = 0; i < 32; i = i + 1)
-                    rf[i] = 0;
+                    for(i = 0; i < 32; i = i + 1)
+                        rf[i] = 0;
+            else if(regWriteEn) rf[regWriteAddr] <= regWriteData;
+            else if(jal) rf[31] <= pcplus4;
         end
     assign Display = rf[show][15:0];
     assign RsData = (RsAddr != 0) ? rf[RsAddr] : 0;

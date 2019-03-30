@@ -45,13 +45,13 @@ module alu(input [31:0] a, b,
     always@(*)
         begin
             case({alucont[3],alucont[1:0]})
-                3'b000:   result <= c0;
-                3'b001:   result <= c1;
-                3'b010:   result <= c2;
-                3'b011:   result <= c3;
-                3'b100:   result <= c4;
-                3'b101:   result <= c5;
-                3'b110:   result <= c6;
+                3'b000:   result <= c0; // a & b
+                3'b001:   result <= c1; // a | b
+                3'b010:   result <= c2; // add sub 
+                3'b011:   result <= c3; // slt
+                3'b100:   result <= c4; // sll
+                3'b101:   result <= c5; // srl
+                3'b110:   result <= c6; // sra
                 default: result <= c0;
             endcase
         end

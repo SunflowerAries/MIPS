@@ -8,7 +8,6 @@ module mips(input clk, clk190, reset,
             output [6:0] S,
             output [7:0] AN);
             
-            
     wire memtoreg, branch, pcsrc, zero, alusrc, regdst, regwrite, exp, ret;
     wire [3:0] alucontrol;
     wire [1:0] jump;

@@ -27,6 +27,8 @@ module clkdiv(
     );
     reg[27:0] q;
     wire clk1, clk2;
+    initial
+        q <= 0;
     always@(posedge mclk)
         q <= q + 1;
     assign clk1 = q[26]; //1.32s
