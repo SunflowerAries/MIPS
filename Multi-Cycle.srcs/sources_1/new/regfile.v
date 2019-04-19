@@ -20,16 +20,22 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module regfile(input clk,
-               input regWriteEn,
+module regfile(input clk, reset,
+               input regWriteEn, jal,
                input [4:0] RsAddr, RtAddr,
                input [4:0] regWriteAddr,
-               input [31:0] regWriteData,
+               input [31:0] regWriteData, pc,
                output [31:0] RsData, RtData);
     reg [31:0] rf [31:0];
-    
+    integer i;
     always @ (posedge clk)
-        if(regWriteEn) rf[regWriteAddr] <= regWriteData;
+        begin
+            if(regWriteEn) rf[regWriteAddr] <= regWriteData;
+            if(reset)
+                for(i = 0; i < 32; i = i + 1)
+                    rf[i] = 0;
+            if(jal) rf[31] <= pc;
+        end
         
     assign RsData = (RsAddr != 0) ? rf[RsAddr] : 0;
     assign RtData = (RtAddr != 0) ? rf[RtAddr] : 0;

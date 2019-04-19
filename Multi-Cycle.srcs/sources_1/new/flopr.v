@@ -20,13 +20,13 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module flopr  (input clk, reset, en,
+module flopr  (input clk, reset, en, ret,
                input [31:0] d,
                output reg [31:0] q);
     initial
         q <= 0;
     always@(posedge clk)
         if (reset)  q <= 0;
-        else if(en) q <= d;
+        else if(en | ret) q <= d;
         else q <= q;
 endmodule

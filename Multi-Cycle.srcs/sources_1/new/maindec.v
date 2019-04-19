@@ -22,29 +22,35 @@
 
 module maindec(input [5:0] op,
                input reset, clk,
-               output memtoreg, memwrite,
-               output branch,
+               output memtoreg, memwrite, 
+               output [1:0] branch,
                output regdst, regwrite, alusrca, exp,
                output [1:0] alusrcb, 
                output [2:0] aluop,
                output [1:0] pcsrc,
-               output IRWrite, IorD, pcwrite);
-    reg [16:0] controls;
-    assign {exp, pcwrite, memwrite, IRWrite, regwrite, alusrca, branch, IorD, memtoreg, 
+               output IRWrite, IorD, pcwrite, jal);
+    reg [18:0] controls;
+    assign {jal, exp, pcwrite, memwrite, IRWrite, regwrite, alusrca, branch, IorD, memtoreg, 
     regdst, alusrcb, pcsrc, aluop} = controls;
     
-    parameter fetch = 4'b0000;
-    parameter decode = 4'b0001;
-    parameter memadr = 4'b0010;
-    parameter memrd = 4'b0011;
-    parameter memwb = 4'b0100;
-    parameter memwr = 4'b0101;
-    parameter rtypeex = 4'b0110;
-    parameter rtypewb = 4'b0111;
-    parameter beqex = 4'b1000;
-    parameter addiex = 4'b1001;
-    parameter addiwb = 4'b1010;
-    parameter jex = 4'b1011;
+    parameter fetch = 5'b00000;
+    parameter decode = 5'b00001;
+    parameter memadr = 5'b00010;
+    parameter memrd = 5'b00011;
+    parameter memwb = 5'b00100;
+    parameter memwr = 5'b00101;
+    parameter rtypeex = 5'b00110;
+    parameter rtypewb = 5'b00111;
+    parameter beqex = 5'b01000;
+    parameter addiex = 5'b01001;
+    parameter itypewb = 5'b01010;
+    parameter jex = 5'b01011;
+    parameter bneex = 5'b01100;
+    parameter andiex = 5'b01101;
+    parameter oriex = 5'b01110;
+    parameter sltiex = 5'b01111;
+    parameter link = 5'b10000;
+    parameter jr = 5'b10001;
     
     parameter Rtype = 6'b000000;
     parameter SW = 6'b101011;
@@ -52,8 +58,13 @@ module maindec(input [5:0] op,
     parameter BEQ = 6'b000100;
     parameter ADDI = 6'b001000;
     parameter J = 6'b000010;
+    parameter BNE = 6'b000101;
+    parameter ANDI = 6'b001100;
+    parameter ORI = 6'b001101;
+    parameter SLTI = 6'b001010;
+    parameter JAL = 6'b000011;
     
-    reg [3:0] state, nextstate;
+    reg [4:0] state, nextstate;
     always@(posedge clk, posedge reset)
         if(reset) state <= fetch;
         else      state <= nextstate;
@@ -69,13 +80,18 @@ module maindec(input [5:0] op,
                     BEQ:   nextstate <= beqex;
                     ADDI:  nextstate <= addiex;
                     J:     nextstate <= jex;
-                    default: nextstate <= 4'bxxxx;
+                    BNE:   nextstate <= bneex;
+                    ANDI:  nextstate <= andiex;
+                    ORI:   nextstate <= oriex;
+                    SLTI:  nextstate <= sltiex;
+                    JAL:   nextstate <= link;
+                    default: nextstate <= 5'bxxxxx;
                 endcase
             memadr:
                 case(op)
                     LW: nextstate <= memrd;
                     SW: nextstate <= memwr;
-                    default: nextstate <= 4'bxxxx;
+                    default: nextstate <= 5'bxxxxx;
                 endcase
             memrd:   nextstate <= memwb;
             memwb:   nextstate <= fetch;
@@ -83,36 +99,36 @@ module maindec(input [5:0] op,
             rtypeex: nextstate <= rtypewb;
             rtypewb: nextstate <= fetch;
             beqex:   nextstate <= fetch;
-            addiex:  nextstate <= addiwb;
-            addiwb:  nextstate <= fetch;
+            bneex:   nextstate <= fetch;
+            addiex:  nextstate <= itypewb;
+            andiex:  nextstate <= itypewb;
+            oriex:   nextstate <= itypewb;
+            sltiex:  nextstate <= itypewb;
+            itypewb: nextstate <= fetch;
             jex:     nextstate <= fetch;
-            default: nextstate <= 4'bxxxx;
+            link:    nextstate <= jex;
+            default: nextstate <= 5'bxxxxx;
         endcase
         
     always@(*)
         case(state)
-            fetch:   controls <= 17'b11010000000100000;
-            decode:  controls <= 17'b10000000001100000;
-            memadr:  controls <= 17'b10000100001000000;
-            memrd:   controls <= 17'b10000001000000000;
-            memwb:   controls <= 17'b10001000100000000;
-            memwr:   controls <= 17'b10100001000000000;
-            rtypeex: controls <= 17'b10000100000000010;
-            rtypewb: controls <= 17'b10001000010000000;
-            beqex:   controls <= 17'b10000110000001001;
-            addiex:  controls <= 17'b10000100001000000;
-            addiwb:  controls <= 17'b10001000000000000;
-            jex:     controls <= 17'b11000000000010000;
-            default: controls <= 17'bxxxxxxxxxxxxxxxxx;
+            fetch:   controls <= 19'b0110100000000100000;
+            decode:  controls <= 19'b0100000000001100000;
+            memadr:  controls <= 19'b0100001000001000000;
+            memrd:   controls <= 19'b0100000001000000000;
+            memwb:   controls <= 19'b0100010000100000000;
+            memwr:   controls <= 19'b0101000001000000000;
+            rtypeex: controls <= 19'b0100001000000000010;
+            rtypewb: controls <= 19'b0100010000010000000;
+            beqex:   controls <= 19'b0100001010000001001;
+            bneex:   controls <= 19'b0100001100000001001;
+            addiex:  controls <= 19'b0100001000001000000;
+            andiex:  controls <= 19'b0000001000001000011;
+            oriex:  controls <= 19'b0000001000001000100;
+            sltiex:  controls <= 19'b0100001000001000101;
+            itypewb:  controls <= 19'b0100010000000000000;
+            link:  controls <= 19'b1100000000000000000;
+            jex:     controls <= 19'b0110000000000010000;
+default: controls <= 19'bxxxxxxxxxxxxxxxxxxx;
         endcase
-    //always @ (*)
-     //   case(op)
-       //     6'b001100: controls <= 13'b1010000001100; //andi
-         //   6'b001101: controls <= 13'b1010000010000; //ori
-           // 6'b001010: controls <= 13'b1011000010100; //slti
-            //nop
-            //6'b000101: controls <= 13'b0001010000100; //bne
-            //6'b000011: controls <= 13'b0xxxxx0xxxx11; //jal
-            //default:   controls <= 13'bxxxxxxxxxxxx;
-        //endcase
 endmodule

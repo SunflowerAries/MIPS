@@ -27,10 +27,10 @@ module ALU(input [31:0] a, b,
 endmodule
 
 module alu(input [31:0] a, b,
-           input [2:0] alucont,
+           input [3:0] alucont,
            output reg [31:0] result,
-           output zero);
-           //input [4:0] shamt);
+           output zero,
+           input [4:0] shamt);
     wire [31:0] b_n;
     wire [31:0] c0, c1, c2, c3, c4, c5, c6;
     wire SLT;
@@ -39,20 +39,20 @@ module alu(input [31:0] a, b,
     assign c1 = a | b_n;
     ALU cal(a, b_n, alucont[2], c2, SLT);
     assign c3 = {{31{1'b0}}, SLT};
-    //assign c4 = b << shamt;
-    //assign c5 = b >> shamt;
-    //assign c6 = ({{31{b[31]}}, 1'b0} << (~shamt) )| (b >> shamt);//~shamt = 32 - shamt - 1
+    assign c4 = b << shamt;
+    assign c5 = b >> shamt;
+    assign c6 = ({{31{b[31]}}, 1'b0} << (~shamt) )| (b >> shamt);//~shamt = 32 - shamt - 1
     
     always@(*)
         begin
-            case(alucont[1:0])
-                2'b00:   result <= c0; // a & b
-                2'b01:   result <= c1; // a | b
-                2'b10:   result <= c2; // add sub 
-                2'b11:   result <= c3; // slt
-                //3'b100:   result <= c4; // sll
-                //3'b101:   result <= c5; // srl
-                //3'b110:   result <= c6; // sra
+            case({alucont[3],alucont[1:0]})
+                3'b000:   result <= c0; // a & b
+                3'b001:   result <= c1; // a | b
+                3'b010:   result <= c2; // add sub 
+                3'b011:   result <= c3; // slt
+                3'b100:   result <= c4; // sll
+                3'b101:   result <= c5; // srl
+                3'b110:   result <= c6; // sra
                 default: result <= c0;
             endcase
         end

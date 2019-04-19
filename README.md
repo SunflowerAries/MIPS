@@ -15,3 +15,8 @@ If you want to simulate the top.v, then you'll find that all the results are "XX
 ### MultiCycle MIPS
 
 The MultiCycle MIPS still need to be improved, since it only pass the ad hoc testing in **Harris's Digital Design Computer Architecture**' s 7.4
+
+2019.4.19
+
+successfully pass most tests on <https://github.com/Oxer11/MIPS/tree/master/Assembler/example>, including **quick_multiply.out** which needs srl, sll and **factorial.out** covering jal, jr. Next time, I'll try the Pipeline and I want to add the FPU instruction set.
+
