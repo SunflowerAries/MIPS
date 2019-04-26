@@ -21,17 +21,22 @@
 
 
 module sim();
-    reg clk, reset;
-    wire [31:0] writedata;
-    wire memwrite;
-    top sim(clk, reset, writedata, memwrite);
+    reg clk;
+    reg [6:0] SW;
+    wire [6:0] S;
+    wire [7:0] AN;
+    top sim(clk, SW, S, AN);
     
     initial 
         begin
             clk = 0;
-            reset = 1;
+            SW[0] = 1;
         end
     initial
-        #6 reset = 0;
+        begin
+            #13 SW[0] = 0;
+            SW[6] = 0;
+        end
+        
     always #5 clk = ~clk;
 endmodule

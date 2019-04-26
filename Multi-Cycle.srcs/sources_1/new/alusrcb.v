@@ -5,7 +5,7 @@ module alusrcB(input exp,
     reg [31:0] truedata3;
 always@(*)
     begin
-    truedata3 = {{16{exp}}, {16'hffff}} & data3;
+    truedata3 = {{16{data3[15] & exp}}, data3[15:0]};
     case(alusrcb)
         2'b00: srcb = data1;
         2'b01: srcb = data2;
