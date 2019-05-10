@@ -1,6 +1,10 @@
 # MIPS
 
-### OneCycle MIPS
+[TOC]
+
+
+
+## OneCycle MIPS
 
 The OneCycle MIPS in OneCycle.srcs supports the instructions including:
 
@@ -12,11 +16,21 @@ So you can implore many operations like shift, stack, call and ret.
 
 If you want to simulate the top.v, then you'll find that all the results are "XX", because the clock divider I set is very large, i.e. q[26], q[23], so you won't see any change because the clock offered to CPU doesn't reach the positive edge. An easy way to fix this problem is to change the clock divider to smaller one, like q[0], and when you run the codes on the board, you should change it back.
 
-### MultiCycle MIPS
+
+
+## MultiCycle MIPS
 
 The MultiCycle MIPS still need to be improved, since it only pass the ad hoc testing in **Harris's Digital Design Computer Architecture**' s 7.4
 
-2019.4.19
+### 2019.4.19
 
 successfully pass most tests on <https://github.com/Oxer11/MIPS/tree/master/Assembler/example>, including **quick_multiply.out** which needs srl, sll and **factorial.out** covering jal, jr. Next time, I'll try the Pipeline and I want to add the FPU instruction set.
+
+
+
+## Pipeline
+
+### 2019.5.10
+
+Today, I have just pass the ad hoc testing in **Harris's Digital Design Computer Architecture**' s 7.4, and it's the most difficult time to complete the basic version. Pipeline has so many signals to  look into which have confused me greatly. Worse still, the mechanism behind is also different from OneCycle and MultiCycle since you have 5 instructions run at the same time and you have to deal with many hazards. Forwarding data branch prediction😵, WTF!!! It's just drive me crazy🤬
 
