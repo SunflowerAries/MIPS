@@ -34,3 +34,8 @@ successfully pass most tests on <https://github.com/Oxer11/MIPS/tree/master/Asse
 
 Today, I have just pass the ad hoc testing in **Harris's Digital Design Computer Architecture**' s 7.4, and it's the most difficult time to complete the basic version. Pipeline has so many signals to  look into which have confused me greatly. Worse still, the mechanism behind is also different from OneCycle and MultiCycle since you have 5 instructions run at the same time and you have to deal with many hazards. Forwarding data branch prediction😵, WTF!!! It's just drive me crazy🤬
 
+### 2019.5.16
+
+Today, I've finished the Dynamic Prediction using Branch Prediction Buffer(only one prediction bit). And I've passed most tests on <https://github.com/Oxer11/MIPS/tree/master/Assembler/example>, and branch prediction indeed declines the nop inserted in the Pipeline. And there is a tiny bug in my Branch Prediction Buffer's update, but it won't bring out any problems in the tests I've passed, maybe I'll fix it next Monday. 
+
+And to be honest, it's a bit challenging for me since from OneCycle to Pipeline most of what I do is just copying the code from my teacher's PPT and adding some trivial things but this time I only referred to **Computer organization and architecture by Chun feng Yuan** and finish the code all by myself. And I think it's interesting and meaningful to do this, because it surely helps me understand the Pipeline clearlier. And I think I may eat my words that I'll add the FPU since the final is approaching, so it's difficult for me to deal with it.

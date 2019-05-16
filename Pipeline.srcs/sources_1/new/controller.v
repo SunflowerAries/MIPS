@@ -5,7 +5,9 @@ module controller(input clk, reset,
                   output pcsrcD, 
                   output [1:0] branchD, 
                   output alusrcE, 
-                  output regdstE, regwriteE, regwriteM, regwriteW, jumpD, expD,
+                  output regdstE, regwriteE, regwriteM, regwriteW, 
+                  output [1:0] jumpD, 
+                  output expD, ret,
                   output [3:0] alucontrolE);
                   
 wire [2:0] aluopD;
@@ -16,7 +18,7 @@ wire memwriteE;
 maindec md(opD, memtoregD, memwriteD, branchD, 
            alusrcD, regdstD, regwriteD, jumpD, expD,
            aluopD);
-aludec ad(functD, aluopD, alucontrolD);
+aludec ad(functD, aluopD, alucontrolD, ret);
 assign pcsrcD = (branchD[0] & equalD) | (branchD[1] & (~equalD));
 
 floprc #(9) regE(clk, reset, flushE,

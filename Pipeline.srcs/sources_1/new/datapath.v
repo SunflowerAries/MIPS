@@ -4,7 +4,8 @@ module datapath(input clk, reset,
                 input [1:0] branchD,
                 input alusrcE, regdstE, 
                 input regwriteE, regwriteM, regwriteW, 
-                input jumpD, expD,
+                input [1:0] jumpD, 
+                input expD, ret,
                 input [3:0] alucontrolE,
                 output equalD, 
                 output [31:0] pcF, 
@@ -19,12 +20,12 @@ wire [1:0] forwardaE, forwardbE;
 wire stallF, stallD;
 wire [4:0] rsD, rtD, rdD, shamtD, rsE, rtE, rdE, shamtE;
 wire [4:0] writeregE, writeregM, writeregW;
-wire flushD;
-wire [31:0] pcnextFD, pcnextbrFD, pcplus4F, pcbranchD;
+wire flushF, flushD, branpredF, branpredD;
+wire [31:0] pcnextFD, pcnextbrFD, pcplus4F, pcbranchD, pcnextjmpFD, pcnextFDbefp;
 wire [31:0] signimmD, signimmE, signimmshD;
 wire [31:0] srcaD, srca2D, srcaE, srca2E;
 wire [31:0] srcbD, srcb2D, srcbE, srcb2E, srcb3E;
-wire [31:0] pcplus4D, instrD;
+wire [31:0] pcplus4D, instrD, pcbrpred;
 wire [31:0] aluoutE, aluoutW;
 wire [31:0] readdataW, resultW;
 
@@ -34,16 +35,21 @@ hazard haz(rsD, rtD, rsE, rtE, writeregE, writeregM, writeregW,
            forwardaD, forwardbD, forwardaE, forwardbE,
            stallF, stallD, flushE);
            
-mux2 #(32) pcbrmux(pcplus4F, pcbranchD, pcsrcD, pcnextbrFD);
-mux2 #(32) pcmux(pcnextbrFD, {pcplus4D[31:28], instrD[25:0], 2'b00}, jumpD, pcnextFD);
+BPB BPB(clk, reset, stallD, instrF[31:27], pcF[7:0], pcbranchD, pcsrcD, branpredF, pcbrpred);
 
-regfile rf(clk, regwriteW, rsD, rtD, writeregW, resultW, srcaD, srcbD, reset);
+mux2 #(32) pcbrmux(pcplus4F, pcbranchD, pcsrcD & (~branpredD), pcnextbrFD);
+mux2 #(32) pcmux(pcnextbrFD, {pcplus4D[31:28], instrD[25:0], 2'b00}, jumpD[1], pcnextjmpFD);
 
-flopenr #(32) pcreg(clk, reset, ~stallF, pcnextFD, pcF);
+regfile rf(clk, regwriteW, jumpD[0], rsD, rtD, writeregW, resultW, pcF, srcaD, srcbD, reset);
+mux2 #(32) pcjrmux(pcnextjmpFD, srca2D, ret, pcnextFDbefp);
+mux2 #(32) pcpred(pcnextFDbefp, pcbrpred, branpredF, pcnextFD);
+
+flopenrpred #(32) pcreg(clk, reset, ~stallF, (~pcsrcD & branpredD & ~stallD), pcnextFD, pcplus4D, pcF);
 adder pcadd1(pcF, 32'b100, pcplus4F);
 
-flopenr #(32) r1D(clk, reset, ~stallD, pcplus4F, pcplus4D);
+flopenr #(33) r1D(clk, reset, ~stallD, {pcplus4F, branpredF}, {pcplus4D, branpredD});
 flopenrc #(32) r2D(clk, reset, ~stallD, flushD, instrF, instrD);
+
 signext se(expD, instrD[15:0], signimmD);
 sl2 immsh(signimmD, signimmshD);
 adder pcadd2(pcplus4D, signimmshD, pcbranchD);
@@ -58,7 +64,7 @@ assign rtD = instrD[20:16];
 assign rdD = instrD[15:11];
 assign shamtD = instrD[10:6];
 
-assign flushD = pcsrcD | jumpD;
+assign flushD = (pcsrcD & ~stallD & ~branpredD) | jumpD[0] | jumpD[1] | ret | (~pcsrcD & branpredD & ~stallD);
 
 floprc #(32) r1E(clk, reset, flushE, srcaD, srcaE);
 floprc #(32) r2E(clk, reset, flushE, srcbD, srcbE);
@@ -67,6 +73,7 @@ floprc #(5) r4E(clk, reset, flushE, rsD, rsE);
 floprc #(5) r5E(clk, reset, flushE, rtD, rtE);
 floprc #(5) r6E(clk, reset, flushE, rdD, rdE);
 floprc #(5) r7E(clk, reset, flushE, shamtD, shamtE);
+
 mux3 #(32) forwardaemux(srcaE, resultW, aluoutM, forwardaE, srca2E); // aluoutM -- rtype
 mux3 #(32) forwardbemux(srcbE, resultW, aluoutM, forwardbE, srcb2E); // resultW -- load
 mux2 #(32) srcbmux(srcb2E, signimmE, alusrcE, srcb3E);

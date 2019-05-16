@@ -12,7 +12,7 @@ assign forwardaD = (rsD != 0 & rsD == writeregM & regwriteM);//surely, if memory
 assign forwardbD = (rtD != 0 & rtD == writeregM & regwriteM);//and we will forward the real value in the next clock
 //here the load is 2 clocks before the instruction
 always@(*)
-    begin
+    begin//Mem's priority is higher than Write's  
         forwardaE = 2'b00; forwardbE = 2'b00;
         if(rsE != 0)
             if(rsE == writeregM & regwriteM) forwardaE = 2'b10;
