@@ -51,7 +51,7 @@ always@(posedge clk)
 
 always@(*)
     begin
-        brF = opF == 5'b00010;
+        brF = (opF == 5'b00010);
         case(state)
             search:
                 begin
@@ -101,28 +101,21 @@ always@(*)
                         choice = pos;
                     end
             endcase
+        else
+            Pbranch = 1'b0;
     end
     
-always@(*)
-    if(state == writing)
+always@(posedge clk)
+    if(state == writing & ~stallD)
         begin
+            if(miss)
+                begin
+                    pos = pos + 1;
+                    miss = 1'b0;
+                end
             if(Rbranch)
-                begin
-                    if(miss)
-                        begin
-                            pos = pos + 1;
-                            miss = 1'b0;
-                        end
-                    Table[choice][32:0] = {1'b1, Destin};
-                end
+                Table[choice][32:0] = {1'b1, Destin};
             else
-                begin
-                    if(miss)
-                        begin
-                            pos = pos + 1;
-                            miss = 1'b0;
-                        end
-                    Table[choice][32:0] = {1'b0, Destin};
-                end
+                Table[choice][32:0] = {1'b0, Destin};
         end
 endmodule
