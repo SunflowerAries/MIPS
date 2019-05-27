@@ -164,61 +164,67 @@ assign flushD = (pcsrcD & ~stallD)
 
 ### 2.2 Flopr及其变型
 
+　　Flopenr设计图如下
+
 <div>
-    <img src="flopenr.PNG">
+    <img src="Pic/flopenr.png">
 </div>
+
 
 　　Flopr及其变型主要用作寄存器，保存流水线各阶段的数据及信号。以下分寄存器说明：
 
 - /Fetch
 
-  　　本寄存器因为涉及到跳转预测，在此只说明基础版本的实现。我们在此采用的是flopenr，用于PC的更新。在时钟上升沿时更新下一条指令的地址，当出现转发无法解决的数据冒险如Load-use或branchstall时，需要Fetch、Decode阶段均stall，此时应通过控制Fetch阶段的stallF信号使PcF保持不变。
+  　　　　本寄存器因为涉及到跳转预测，在此只说明基础版本的实现。我们在此采用的是flopenr，用于PC的更新。在时钟上升沿时更新下一条指令的地址，当出现转发无法解决的数据冒险如Load-use或branchstall时，需要Fetch、Decode阶段均stall，此时应通过控制Fetch阶段的stallF信号使PcF保持不变。
 
 - Fetch/Decode
 
-  　　在本寄存器中需要保存和更新的数据有pcplus4，instr。其中pcplus4对应的寄存器采用flopenr，在时钟上升沿时使Fetch阶段的pcplus4流向Decode阶段，用于计算跳转地址pcbranch，当出现上述的数据冒险时可通过stallD信号控制使得Decode阶段stall。instr对应的寄存器采用flopenrc，在时钟上升沿时使Fetch阶段从指令寄存器中读出的instrF流向Decode阶段用于译码并生成指令的对应控制信号。flopenrc除了flopenr的几个控制外，在本实例中还需要一个清零的控制flushD用来插入气泡。flushD信号的实现已在控制冒险中说明。
+  　　　　在本寄存器中需要保存和更新的数据有pcplus4，instr。其中pcplus4对应的寄存器采用flopenr，在时钟上升沿时使Fetch阶段的pcplus4流向Decode阶段，用于计算跳转地址pcbranch，当出现上述的数据冒险时可通过stallD信号控制使得Decode阶段stall。instr对应的寄存器采用flopenrc，在时钟上升沿时使Fetch阶段从指令寄存器中读出的instrF流向Decode阶段用于译码并生成指令的对应控制信号。flopenrc除了flopenr的几个控制外，在本实例中还需要一个清零的控制flushD用来插入气泡。flushD信号的实现已在控制冒险中说明。
 
 - Decode/Execute
 
-  　　
+  　　在本寄存器中需要保存和更新的数据有srca，srcb，signimmE，rsE，stE，rdE，shamtE，且均用floprc实现。在时钟上升沿时将对应数据从Decode阶段送到Execute阶段用于ALU的计算以及Write阶段写回寄存器的确定。并且还需要一个清零的控制flushE，控制逻辑与flushD一致。寄存器中还应保存和更新相应的信号，包括Execute阶段会用的alusrc,  alucontrol，Memory阶段会用的memwrite以及Write阶段会用到的regdst, regwrite, memtoreg，也用floprc实现。
 
 - Execute/Memory
 
-  　　
+  　　本寄存器中需要保存和更新的数据有writedata，aluout，writereg，因为在后续阶段中不涉及插入气泡的问题，所以只需用flopr实现即可。在时钟上升沿时将从寄存器中读出的值从Execute阶段送到Memory阶段以写入内存，其他数据在Write阶段会用到。
 
 - Memory/Write
 
-  　　
+　　　　本寄存器中需要保存和更新的数据有aluout，writereg，用于寄存器的写回。
 
 ### 2.3 Datapath
 
+　　Datapath设计图如下
+
 <div>
-    <img src="Pipeline with BPB.PNG">
+    <img src="Pic/Pipeline with BPB.png">
 </div>
 
-　　
+
+　　Datapath中的部件设计与单周期的实现相同，主要的改变是引入了流水线来达到并行的效果，而流水线中每个阶段的寄存器情况已经说明，故不再赘述。Datapath的另一改变是引入了跳转预测机制（Branch Prediction Buffer）来提高CPU的运行效率，我将在下一部分中详细说明。
 
 ### 2.4 Branch Prediction Buffer
 
+　　本部分思路借鉴袁春风《计算机组成与系统结构》7.3.3 控制冒险的动态预测。
+
+####　2.4.1 设计初衷
+
+　　在最原始的流水线中当执行branch指令时需要在Execute阶段才能确定是否跳转，如果应该跳转则Fetch、Decode阶段顺序取出的指令都应该被flush，这造成了CPU资源的浪费。虽然我们在Decode阶段引入comp器件将确定跳转提前，但执行跳转时仍然会使Fetch阶段的指令被flush。考虑到现代计算机中跳转指令的使用情况（for、while语句一般会大量循环），我们可以引入一个预测跳转机制，根据上一次跳转指令执行的情况来预测这一次，将判断是否跳转提前到Fetch阶段。这显然可以有效减少气泡数目，并预测错误一般只发生在进入循环语句和退出循环语句。
+
+#### 2.4.2 设计思路
+
+　　预测跳转机制的流程图如下
+
 <div>
-    <img src="Branch Prediction Buffer.PNG">
-</div>
+    <img src="Pic/Branch Prediction Buffer.png">
+</div>　　　
+　　Fetch阶段从指令存储器中取出指令并且将pcF的后8位送入BHT中查看是否有对应跳转指令的记录，若有，当预测位为1时，读出跳转指令对应的转移目标地址作为下一条指令的地址；当预测位为0时，则判断不跳转顺序读出下一条指令。如果BHT中没有相应跳转指令的记录，则预测不发生跳转，并且在BHT中记录相应跳转指令的信息。以下讨论可能遇见的情况
 
-　　
-
-## 3 流水线冒险及其处理
-
-　　
-
-### 3.1 结构冒险
-
-　　
-
-### 3.2 数据冒险
-
-　　
-
-### 3.3 控制冒险
+- 预测跳转，实际跳转
+- 预测跳转，实际不跳转
+- 预测不跳转，实际不跳转
+- 预测不跳转，实际跳转
 
 　　
 
