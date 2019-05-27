@@ -33,39 +33,24 @@ integer i;
 reg [1:0] pos,choice;
 parameter waiting =  1'b0;
 parameter writing = 1'b1;
-reg miss, brF, state, nextstate;
+reg miss, state, nextstate;
+wire brF;
+
+assign brF = (opF == 5'b00010);
 
 always@(posedge clk)
-    if(reset)
-        begin
-            state <= waiting;
-            for(i = 0; i < 4; i = i + 1)
-                Table[i] = 41'b0;
-            pos = 2'b0;
-            choice = 2'b0;
-            miss = 1'b0;
-            Pbranch = 1'b0;
-        end
-    else      
-        state <= nextstate;
-
-always@(*)
     begin
-        brF = (opF == 5'b00010);
-        case(state)
-            waiting:
-                begin
-                    if(brF) nextstate <= writing;
-                    else    nextstate <= waiting;
-                end
-            writing: 
-                begin
-                    if(stallD)
-                        nextstate <= writing;
-                    else
-                        nextstate <= waiting;
-                end
-        endcase
+        if(reset)
+            begin
+                state <= waiting;
+                for(i = 0; i < 4; i = i + 1)
+                    Table[i] = 41'b0;
+                pos = 2'b0;
+                choice = 2'b0;
+                miss = 1'b0;
+            end
+        else      
+            state <= nextstate;
         
         if(brF)
             case(IAdr)
@@ -103,19 +88,35 @@ always@(*)
             endcase
         else
             Pbranch = 1'b0;
+            
+        if(state == writing & ~stallD)
+            begin
+                if(miss)
+                    begin
+                        pos = pos + 1;
+                        miss = 1'b0;
+                    end
+                if(Rbranch)
+                    Table[choice][32:0] = {1'b1, Destin};
+                else
+                    Table[choice][32:0] = {1'b0, Destin};
+            end
     end
-    
-always@(posedge clk)
-    if(state == writing & ~stallD)
-        begin
-            if(miss)
-                begin
-                    pos = pos + 1;
-                    miss = 1'b0;
-                end
-            if(Rbranch)
-                Table[choice][32:0] = {1'b1, Destin};
-            else
-                Table[choice][32:0] = {1'b0, Destin};
-        end
+
+always@(*)
+    case(state)
+        waiting:
+            begin
+                if(brF) nextstate <= writing;
+                else    nextstate <= waiting;
+            end
+        writing: 
+            begin
+                if(stallD)
+                    nextstate <= writing;
+                else
+                    nextstate <= waiting;
+            end
+    endcase
+
 endmodule
