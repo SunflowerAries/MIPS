@@ -7,7 +7,9 @@ module regfile(input clk,
                input [31:0] regWriteData, pcnextFD,
                output [31:0] RsData, RtData,
                //output [15:0] Display,
-               input reset);
+               input reset,
+               input [4:0] switch,
+               output [15:0] Display);
     reg [31:0] rf [31:0];
     integer i;
     always@(negedge clk)
@@ -19,6 +21,7 @@ module regfile(input clk,
             if(jal)
                 rf[31] = pcnextFD;
         end
+    assign Display = rf[switch][15:0];
     assign RsData = (RsAddr != 0) ? rf[RsAddr] : 0;
     assign RtData = (RtAddr != 0) ? rf[RtAddr] : 0;
     //assign Display = rf[show][15:0];;

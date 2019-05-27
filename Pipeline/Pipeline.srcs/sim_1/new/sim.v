@@ -18,21 +18,23 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-
-
 module sim();
     reg clk;
-    reg reset;
-    wire [31:0] writedata, dataadr;
-    wire memwrite;
+    wire [6:0] S;
+    wire [7:0] AN;
+    reg [6:0] SW;
     
-    top sim(clk, reset, writedata, dataadr, memwrite);
+    top sim(clk, SW, S, AN);
     initial
-        begin
-            reset = 1;
+        begin 
+            SW[0] = 1;
             clk = 0;
         end
     initial
-        #13 reset = 0;
+        begin
+            #13  SW[0] = 0;
+            SW[6] = 0;
+        end
     always #5 clk = ~clk;
 endmodule
+

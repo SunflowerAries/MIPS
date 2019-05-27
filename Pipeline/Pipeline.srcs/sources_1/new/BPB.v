@@ -30,15 +30,15 @@ module BPB(input clk, reset, stallD,
            
 reg [40:0] Table[3:0];
 integer i;
-reg [1:0] pos,nextstate, choice;
-parameter search =  1'b0;
+reg [1:0] pos,choice;
+parameter waiting =  1'b0;
 parameter writing = 1'b1;
-reg miss, brF, state;
+reg miss, brF, state, nextstate;
 
 always@(posedge clk)
     if(reset)
         begin
-            state <= search;
+            state <= waiting;
             for(i = 0; i < 4; i = i + 1)
                 Table[i] = 41'b0;
             pos = 2'b0;
@@ -53,17 +53,17 @@ always@(*)
     begin
         brF = (opF == 5'b00010);
         case(state)
-            search:
+            waiting:
                 begin
                     if(brF) nextstate <= writing;
-                    else    nextstate <= search;
+                    else    nextstate <= waiting;
                 end
             writing: 
                 begin
                     if(stallD)
                         nextstate <= writing;
                     else
-                        nextstate <= search;
+                        nextstate <= waiting;
                 end
         endcase
         

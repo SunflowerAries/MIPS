@@ -1,4 +1,4 @@
-module datapath(input clk, reset, 
+module datapath(input clk, clk190, reset, 
                 input memtoregE, memtoregM, memtoregW, 
                 input pcsrcD, 
                 input [1:0] branchD,
@@ -13,7 +13,10 @@ module datapath(input clk, reset,
                 output [31:0] aluoutM, writedataM, 
                 input [31:0] readdataM, 
                 output [5:0] opD, functD, 
-                output flushE);
+                output flushE,
+                input [4:0] switch,
+                output [6:0] S,
+                output [7:0] AN);
 
 wire forwardaD, forwardbD;
 wire [1:0] forwardaE, forwardbE;
@@ -28,6 +31,9 @@ wire [31:0] srcbD, srcb2D, srcbE, srcb2E, srcb3E;
 wire [31:0] pcplus4D, instrD, pcbrpred;
 wire [31:0] aluoutE, aluoutW;
 wire [31:0] readdataW, resultW;
+wire [15:0] Real;
+
+Display Display(clk190, {pcF[15:0], Real}, S, AN, reset);
 
 hazard haz(rsD, rtD, rsE, rtE, writeregE, writeregM, writeregW,
            regwriteE, regwriteM, regwriteW,
@@ -40,7 +46,7 @@ BPB BPB(clk, reset, stallD, instrF[31:27], pcF[7:0], pcbranchD, pcsrcD, branpred
 mux2 #(32) pcbrmux(pcplus4F, pcbranchD, pcsrcD & (~branpredD), pcnextbrFD);
 mux2 #(32) pcmux(pcnextbrFD, {pcplus4D[31:28], instrD[25:0], 2'b00}, jumpD[1], pcnextjmpFD);
 
-regfile rf(clk, regwriteW, jumpD[0], rsD, rtD, writeregW, resultW, pcF, srcaD, srcbD, reset);
+regfile rf(clk, regwriteW, jumpD[0], rsD, rtD, writeregW, resultW, pcF, srcaD, srcbD, reset, switch, Real);
 mux2 #(32) pcjrmux(pcnextjmpFD, srca2D, ret, pcnextFDbefp);
 mux2 #(32) pcpred(pcnextFDbefp, pcbrpred, branpredF, pcnextFD);
 
