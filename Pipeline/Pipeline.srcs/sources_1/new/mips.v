@@ -1,4 +1,4 @@
-module mips(input clk, clk190, reset,
+module mips(input clk, clk190, reset, waitinstr,
             output [31:0] pcF,
             input [31:0] instrF,
             output memwriteM,
@@ -18,7 +18,7 @@ module mips(input clk, clk190, reset,
     controller c(clk, reset, opD, functD, flushE, equalD, 
                  memtoregE, memtoregM, memtoregW, memwriteM, pcsrcD, branchD,
                  alusrcE, regdstE, regwriteE, regwriteM, regwriteW, jumpD, expD, ret, alucontrolE);
-    datapath dp(clk, clk190, reset, memtoregE, memtoregM, memtoregW, pcsrcD, branchD,
+    datapath dp(clk, clk190, reset, waitinstr, memtoregE, memtoregM, memtoregW, pcsrcD, branchD,
                 alusrcE, regdstE, regwriteE, regwriteM, regwriteW, jumpD, expD, ret, alucontrolE,
                 equalD, pcF, instrF, aluoutM, writedataM, readdataM, opD, functD, flushE, switch, S, AN);
 endmodule

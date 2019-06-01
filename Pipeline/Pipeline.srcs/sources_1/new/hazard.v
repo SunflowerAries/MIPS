@@ -1,6 +1,6 @@
 module hazard(input [4:0] rsD, rtD, rsE, rtE, 
               input [4:0] writeregE, writeregM, writeregW,
-              input regwriteE, regwriteM, regwriteW,
+              input regwriteE, regwriteM, regwriteW, waitinstr,
               input memtoregE, memtoregM, 
               input [1:0] branchD,
               output forwardaD, forwardbD,
@@ -26,6 +26,6 @@ assign lwstallD = memtoregE & (rtE == rsD | rtE == rtD);//the load is only one c
 assign branchstallD = (branchD[0] | branchD[1]) & ((regwriteE & ((writeregE == rsD) | (writeregE == rtD))) |//rtype and so on before branch
                             (memtoregM & ((writeregM == rsD) | (writeregM == rtD))));//load before branch
 assign stallD = lwstallD | branchstallD;
-assign stallF = stallD;
+assign stallF = stallD | waitinstr;
 assign flushE = stallD;
 endmodule

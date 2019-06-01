@@ -1,4 +1,4 @@
-module datapath(input clk, clk190, reset, 
+module datapath(input clk, clk190, reset, waitinstr,
                 input memtoregE, memtoregM, memtoregW, 
                 input pcsrcD, 
                 input [1:0] branchD,
@@ -36,7 +36,7 @@ wire [15:0] Real;
 Display Display(clk190, {pcF[15:0], Real}, S, AN, reset);
 
 hazard haz(rsD, rtD, rsE, rtE, writeregE, writeregM, writeregW,
-           regwriteE, regwriteM, regwriteW,
+           regwriteE, regwriteM, regwriteW, waitinstr,
            memtoregE, memtoregM, branchD,
            forwardaD, forwardbD, forwardaE, forwardbE,
            stallF, stallD, flushE);
@@ -70,7 +70,7 @@ assign rtD = instrD[20:16];
 assign rdD = instrD[15:11];
 assign shamtD = instrD[10:6];
 
-assign flushD = (pcsrcD & ~stallD & ~branpredD) | jumpD[0] | jumpD[1] | ret | (~pcsrcD & branpredD & ~stallD);
+assign flushD = (pcsrcD & ~stallD & ~branpredD) | jumpD[0] | jumpD[1] | ret | (~pcsrcD & branpredD & ~stallD) | waitinstr;
 
 floprc #(32) r1E(clk, reset, flushE, srcaD, srcaE);
 floprc #(32) r2E(clk, reset, flushE, srcbD, srcbE);

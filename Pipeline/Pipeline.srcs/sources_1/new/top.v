@@ -40,12 +40,15 @@ module top(input CLK100MHZ,
            input [6:0] SW,
            output [6:0] S,
            output [7:0] AN);
-    wire [31:0] writedata, dataadr;
+    wire [31:0] writedata, dataAddr;
     wire clock, clock190;
     wire [31:0] pc, instr, readdata;
-    wire memwrite;
+    wire memwrite, waitinstr;
+    wire icacheread;
+    wire [255:0] iblock;
     clkdiv myClk(CLK100MHZ, clock, clock190, SW[6]);
-    mips mips(clock, clock190, SW[0], pc, instr, memwrite, dataadr, writedata, readdata, SW[5:1], S, AN);
-    imem imem(pc[7:2], instr);
-    dmem dmem(clock, memwrite, dataadr, writedata, readdata);
+    mips mips(clock, clock190, SW[0], waitinstr, pc, instr, memwrite, dataAddr, writedata, readdata, SW[5:1], S, AN);
+    icache icache(clock, SW[0], pc[9:2], iblock, waitinstr, instr);
+    imem imem(pc[9:2], iblock);
+    dmem dmem(clock, memwrite, dataAddr, writedata, readdata);
 endmodule

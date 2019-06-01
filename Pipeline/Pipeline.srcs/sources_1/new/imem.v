@@ -1,6 +1,6 @@
-module imem(input [5:0] a,
-            output [31:0] rd);
-    reg [31:0] RAM [63:0];
+module imem(input [7:0] a,
+            output [255:0] rd);
+    reg [31:0] RAM [127:0];
     initial
         begin
             /*RAM[0]<=32'h20020005;
@@ -98,5 +98,5 @@ module imem(input [5:0] a,
             RAM[5]<=32'h1510fffd;*/
             //$readmemh("memfile.dat", RAM);
         end
-    assign rd = RAM[a];//{RAM[a + 3], RAM[a + 2], RAM[a + 1], RAM[a]};
+    assign rd = {RAM[a+7], RAM[a+6], RAM[a+5], RAM[a+4], RAM[a+3], RAM[a+2], RAM[a+1], RAM[a]};//{RAM[a + 3], RAM[a + 2], RAM[a + 1], RAM[a]};
 endmodule
