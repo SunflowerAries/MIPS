@@ -1,4 +1,4 @@
-module datapath(input clk, clk190, reset, waitinstr,
+module datapath(input clk, clk190, reset, waitinstr, waitdata,
                 input memtoregE, memtoregM, memtoregW, 
                 input pcsrcD, 
                 input [1:0] branchD,
@@ -7,13 +7,13 @@ module datapath(input clk, clk190, reset, waitinstr,
                 input [1:0] jumpD, 
                 input expD, ret,
                 input [3:0] alucontrolE,
-                output equalD, 
+                output equalD, stallE, stallM, stallW,
                 output [31:0] pcF, 
                 input [31:0] instrF, 
                 output [31:0] aluoutM, writedataM, 
                 input [31:0] readdataM, 
                 output [5:0] opD, functD, 
-                output flushE,
+                output flushE, 
                 input [4:0] switch,
                 output [6:0] S,
                 output [7:0] AN);
@@ -36,10 +36,10 @@ wire [15:0] Real;
 Display Display(clk190, {pcF[15:0], Real}, S, AN, reset);
 
 hazard haz(rsD, rtD, rsE, rtE, writeregE, writeregM, writeregW,
-           regwriteE, regwriteM, regwriteW, waitinstr,
+           regwriteE, regwriteM, regwriteW, waitinstr, waitdata,
            memtoregE, memtoregM, branchD,
            forwardaD, forwardbD, forwardaE, forwardbE,
-           stallF, stallD, flushE);
+           stallF, stallD, stallE, stallM, flushE, stallW);
            
 BPB BPB(clk, reset, stallD, instrF[31:27], pcF[7:0], pcbranchD, pcsrcD, branpredF, pcbrpred);
 
@@ -72,26 +72,27 @@ assign shamtD = instrD[10:6];
 
 assign flushD = (pcsrcD & ~stallD & ~branpredD) | jumpD[0] | jumpD[1] | ret | (~pcsrcD & branpredD & ~stallD) | waitinstr;
 
-floprc #(32) r1E(clk, reset, flushE, srcaD, srcaE);
-floprc #(32) r2E(clk, reset, flushE, srcbD, srcbE);
-floprc #(32) r3E(clk, reset, flushE, signimmD, signimmE);
-floprc #(5) r4E(clk, reset, flushE, rsD, rsE);
-floprc #(5) r5E(clk, reset, flushE, rtD, rtE);
-floprc #(5) r6E(clk, reset, flushE, rdD, rdE);
-floprc #(5) r7E(clk, reset, flushE, shamtD, shamtE);
+flopenrc #(32) r1E(clk, reset, ~stallE, flushE, srcaD, srcaE);
+flopenrc #(32) r2E(clk, reset, ~stallE, flushE, srcbD, srcbE);
+flopenrc #(32) r3E(clk, reset, ~stallE, flushE, signimmD, signimmE);
+flopenrc #(5) r4E(clk, reset, ~stallE, flushE, rsD, rsE);
+flopenrc #(5) r5E(clk, reset, ~stallE, flushE, rtD, rtE);
+flopenrc #(5) r6E(clk, reset, ~stallE, flushE, rdD, rdE);
+flopenrc #(5) r7E(clk, reset, ~stallE, flushE, shamtD, shamtE);
 
 mux3 #(32) forwardaemux(srcaE, resultW, aluoutM, forwardaE, srca2E); // aluoutM -- rtype
 mux3 #(32) forwardbemux(srcbE, resultW, aluoutM, forwardbE, srcb2E); // resultW -- load
+
 mux2 #(32) srcbmux(srcb2E, signimmE, alusrcE, srcb3E);
 alu alu(srca2E, srcb3E, alucontrolE, aluoutE, shamtE);
 mux2 #(5) wrmux(rtE, rdE, regdstE, writeregE);
 
-flopr #(32) r1M(clk, reset, srcb2E, writedataM); //store
-flopr #(32) r2M(clk, reset, aluoutE, aluoutM);
-flopr #(5) r3M(clk, reset, writeregE, writeregM);
+flopenr #(32) r1M(clk, reset, ~stallM, srcb2E, writedataM); //store
+flopenr #(32) r2M(clk, reset, ~stallM, aluoutE, aluoutM);
+flopenr #(5) r3M(clk, reset, ~stallM, writeregE, writeregM);
 
-flopr #(32) r1W(clk, reset, aluoutM, aluoutW);
-flopr #(32) r2W(clk, reset, readdataM, readdataW);
-flopr #(5) r3W(clk, reset, writeregM, writeregW);
+flopenr #(32) r1W(clk, reset, ~stallW, aluoutM, aluoutW);
+flopenr #(32) r2W(clk, reset, ~stallW, readdataM, readdataW);
+flopenr #(5) r3W(clk, reset, ~stallW, writeregM, writeregW);
 mux2 #(32) resmux(aluoutW, readdataW, memtoregW, resultW);
 endmodule

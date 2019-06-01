@@ -26,10 +26,10 @@ module icache(input clk, reset,
              output waitinstr,
              output reg [31:0] rd);
               // 2 + 1 + 3, 2^6 = 64 addresses
-reg [4:0] cachetable [3:0] [1:0]; // 4 sets and 2 lines and 32 bytes per block
+reg [4:0] cachetable [3:0] [1:0]; // 4 sets and 2 lines and 32 bytes(8 * 4 bytes, 8 * 32bits) per block
 reg [31:0] cachedata [3:0] [1:0] [7:0];
-integer i, j, k;
-reg [2:0] state, nextstate;
+integer i, j;
+reg [2:0] state;
 parameter cachefetch = 2'b00;
 parameter waiting_1  = 2'b01;
 parameter waiting_2  = 2'b10;

@@ -1,6 +1,6 @@
 module controller(input clk, reset, 
                   input [5:0] opD, functD, 
-                  input flushE, equalD, 
+                  input flushE, equalD, stallE, stallM, stallW, 
                   output memtoregE, memtoregM, memtoregW, memwriteM, 
                   output pcsrcD, 
                   output [1:0] branchD, 
@@ -21,15 +21,15 @@ maindec md(opD, memtoregD, memwriteD, branchD,
 aludec ad(functD, aluopD, alucontrolD, ret);
 assign pcsrcD = (branchD[0] & equalD) | (branchD[1] & (~equalD));
 
-floprc #(9) regE(clk, reset, flushE,
+flopenrc #(9) regE(clk, reset, ~stallE, flushE,
                 {memtoregD, memwriteD, alusrcD, regdstD, regwriteD, alucontrolD},
                 {memtoregE, memwriteE, alusrcE, regdstE, regwriteE, alucontrolE});
                 
-flopr #(3) regM(clk, reset, 
+flopenr #(3) regM(clk, reset, ~stallM,
                {memtoregE, memwriteE, regwriteE},
                {memtoregM, memwriteM, regwriteM});
                
-flopr #(2) regW(clk, reset, 
+flopenr #(2) regW(clk, reset, ~stallW,
                {memtoregM, regwriteM},
                {memtoregW, regwriteW});
 
