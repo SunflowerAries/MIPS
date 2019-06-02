@@ -52,5 +52,5 @@ module top(input CLK100MHZ,
     icache icache(clock, SW[0], pc[9:2], iblock, waitinstr, instr);
     imem imem(pc[9:2], iblock);
     dcache dcache(clock, SW[0], memwrite, memtoreg, dataAddr[9:2], writedata, dblock_m, waitdata, cachetomem, readdata, blockAddr, dblock_c);
-    dmem dmem(clock, cachetomem, blockAddr, dblock_c, dblock_m);
+    dmem dmem(clock, cachetomem, {dataAddr[9:5], 3'b000}, blockAddr, dblock_c, dblock_m);
 endmodule

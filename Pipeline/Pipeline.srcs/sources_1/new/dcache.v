@@ -66,7 +66,10 @@ always@(posedge clk)
                                     if(cachetable[0][0][3]) // valid?
                                         begin
                                             if(we)
-                                                cachetable[0][0][5] = 1'b1;
+                                                begin
+                                                    cachetable[0][0][5] = 1'b1;
+                                                    cachedata[0][0][Addr[2:0]] = writedata;
+                                                end
                                             cachetable[0][0][4] = 1'b1;
                                             cachetable[0][1][4] = 1'b0;
                                         end
@@ -74,7 +77,10 @@ always@(posedge clk)
                                     if(cachetable[0][1][3]) // valid?
                                         begin
                                             if(we)
-                                                cachetable[0][1][5] = 1'b1;
+                                                begin
+                                                    cachetable[0][1][5] = 1'b1;
+                                                    cachedata[0][1][Addr[2:0]] = writedata;
+                                                end
                                             cachetable[0][0][4] = 1'b0;
                                             cachetable[0][1][4] = 1'b1;
                                         end
@@ -87,7 +93,10 @@ always@(posedge clk)
                                     if(cachetable[1][0][3]) // valid?
                                         begin
                                             if(we)
-                                                cachetable[1][0][5] = 1'b1;
+                                                begin
+                                                    cachetable[1][0][5] = 1'b1;
+                                                    cachedata[1][0][Addr[2:0]] = writedata;
+                                                end
                                             cachetable[1][0][4] = 1'b1;
                                             cachetable[1][1][4] = 1'b0;
                                         end
@@ -95,7 +104,10 @@ always@(posedge clk)
                                     if(cachetable[1][1][3]) // valid?
                                         begin
                                             if(we)
-                                                cachetable[1][1][5] = 1'b1;
+                                                begin
+                                                    cachetable[1][1][5] = 1'b1;
+                                                    cachedata[1][1][Addr[2:0]] = writedata;
+                                                end
                                             cachetable[1][0][4] = 1'b0;
                                             cachetable[1][1][4] = 1'b1;
                                         end
@@ -108,7 +120,10 @@ always@(posedge clk)
                                     if(cachetable[2][0][3]) // valid?
                                         begin
                                             if(we)
-                                                cachetable[2][0][5] = 1'b1;
+                                                begin
+                                                    cachetable[2][0][5] = 1'b1;
+                                                    cachedata[2][0][Addr[2:0]] = writedata;
+                                                end
                                             cachetable[2][0][4] = 1'b1;
                                             cachetable[2][1][4] = 1'b0;
                                         end
@@ -116,7 +131,10 @@ always@(posedge clk)
                                     if(cachetable[2][1][3]) // valid?
                                         begin
                                             if(we)
-                                                cachetable[2][1][5] = 1'b1;
+                                                begin
+                                                    cachetable[2][1][5] = 1'b1;
+                                                    cachedata[2][1][Addr[2:0]] = writedata;
+                                                end
                                             cachetable[2][0][4] = 1'b0;
                                             cachetable[2][1][4] = 1'b1;
                                         end
@@ -129,7 +147,10 @@ always@(posedge clk)
                                     if(cachetable[3][0][3]) // valid?
                                         begin
                                             if(we)
-                                                cachetable[3][0][5] = 1'b1;
+                                                begin
+                                                    cachetable[3][0][5] = 1'b1;
+                                                    cachedata[3][0][Addr[2:0]] = writedata;
+                                                end
                                             cachetable[3][0][4] = 1'b1;
                                             cachetable[3][1][4] = 1'b0;
                                         end
@@ -137,7 +158,10 @@ always@(posedge clk)
                                     if(cachetable[3][1][3]) // valid?
                                         begin
                                             if(we)
-                                                cachetable[3][1][5] = 1'b1;
+                                                begin
+                                                    cachetable[3][1][5] = 1'b1;
+                                                    cachedata[3][1][Addr[2:0]] = writedata;
+                                                end
                                             cachetable[3][0][4] = 1'b0;
                                             cachetable[3][1][4] = 1'b1;
                                         end
@@ -145,7 +169,7 @@ always@(posedge clk)
                         end
                 endcase
             end
-        else if(state == memfetch)
+        else if(state == memfetch & (re | we))
             begin
                 if(~cachetable[Addr[4:3]][0][3])// how to replace, everytime we add a new line
                     begin                       // we have to set the ref site to 1 and the ref site of the other to 0
@@ -220,10 +244,7 @@ if(state == cachefetch & (re | we))
                             if(cachetable[0][0][3]) // valid?
                                 begin
                                     if(we)
-                                        begin
-                                            cachedata[0][0][Addr[2:0]] = writedata;
-                                            whit = 1'b1;
-                                        end
+                                        whit = 1'b1;
                                     else if(re)
                                         begin
                                             rd = cachedata[0][0][Addr[2:0]];
@@ -241,10 +262,7 @@ if(state == cachefetch & (re | we))
                             if(cachetable[0][1][3]) // valid?
                                 begin
                                     if(we)
-                                        begin
-                                            cachedata[0][1][Addr[2:0]] = writedata;
-                                            whit = 1'b1;
-                                        end
+                                        whit = 1'b1;
                                     else if(re)
                                         begin
                                             rd = cachedata[0][1][Addr[2:0]];
@@ -274,10 +292,7 @@ if(state == cachefetch & (re | we))
                             if(cachetable[1][0][3]) // valid?
                                 begin
                                     if(we)
-                                        begin
-                                            cachedata[1][0][Addr[2:0]] = writedata;
-                                            whit = 1'b1;
-                                        end
+                                        whit = 1'b1;
                                     else if(re)
                                         begin
                                             rd = cachedata[1][0][Addr[2:0]];
@@ -295,10 +310,7 @@ if(state == cachefetch & (re | we))
                             if(cachetable[1][1][3]) // valid?
                                 begin
                                     if(we)
-                                        begin
-                                            cachedata[1][1][Addr[2:0]] = writedata;
-                                            whit = 1'b1;
-                                        end
+                                        whit = 1'b1;
                                     else if(re)
                                         begin
                                             rd = cachedata[1][1][Addr[2:0]];
@@ -328,10 +340,7 @@ if(state == cachefetch & (re | we))
                             if(cachetable[2][0][3]) // valid?
                                 begin
                                     if(we)
-                                        begin
-                                            cachedata[2][0][Addr[2:0]] = writedata;
-                                            whit = 1'b1;
-                                        end
+                                        whit = 1'b1;
                                     else if(re)
                                         begin
                                             rd = cachedata[2][0][Addr[2:0]];
@@ -349,10 +358,7 @@ if(state == cachefetch & (re | we))
                             if(cachetable[2][1][3]) // valid?
                                 begin
                                     if(we)
-                                        begin
-                                            cachedata[2][1][Addr[2:0]] = writedata;
-                                            whit = 1'b1;
-                                        end
+                                        whit = 1'b1;
                                     else if(re)
                                         begin
                                             rd = cachedata[2][1][Addr[2:0]];
@@ -382,10 +388,7 @@ if(state == cachefetch & (re | we))
                             if(cachetable[3][0][3]) // valid?
                                 begin
                                     if(we)
-                                        begin
-                                            cachedata[3][0][Addr[2:0]] = writedata;
-                                            whit = 1'b1;
-                                        end
+                                        whit = 1'b1;
                                     else if(re)
                                         begin
                                             rd = cachedata[3][0][Addr[2:0]];
@@ -403,10 +406,7 @@ if(state == cachefetch & (re | we))
                             if(cachetable[3][1][3]) // valid?
                                 begin
                                     if(we)
-                                        begin
-                                            cachedata[3][1][Addr[2:0]] = writedata;
-                                            whit = 1'b1;
-                                        end
+                                        whit = 1'b1;
                                     else if(re)
                                         begin
                                             rd = cachedata[3][1][Addr[2:0]];
