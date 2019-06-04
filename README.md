@@ -50,4 +50,4 @@ And I've passed <a style="text-decoration:none;" href="https://github.com/Oxer11
 
 ### 2019.6.4
 
-Today, I pass the test on the board and add the random data generator **data.py**. A total of **num** random integers module 10 can be generated in generate(num) function. And sum(stride, num) function can sum up the generated integers with different strides. To help you pass the tests suming up the data with different strides. All thr sample test is generated through <a style="text-decoration:none;" href="<https://github.com/Oxer11/MIPS-Microprocessors/blob/master/Assembler/assembler.py>">Oxer's excellent assembler</a>.
+Today, I pass the test on the board and add the random data generator **data.py**. A total of **num** random integers module 10 can be generated in generate(num) function. And sum(stride, num) function can sum up the generated integers with different strides. To help you pass the tests suming up the data with different strides. All thr sample test is generated through <a style="text-decoration:none;" href="<https://github.com/Oxer11/MIPS/tree/master/Assembler/assembler.py>">Oxer's excellent assembler</a>.
