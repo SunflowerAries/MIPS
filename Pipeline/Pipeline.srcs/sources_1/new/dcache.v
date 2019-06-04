@@ -39,11 +39,13 @@ parameter waiting_1  = 2'b01;
 parameter waiting_2  = 2'b10;
 parameter memfetch   = 2'b11;
 reg rhit, whit;
+integer times;
 
 initial
     begin
         rhit = 1'b0;
         whit = 1'b0;
+        times = 0;
     end
 
 always@(posedge clk)
@@ -254,9 +256,15 @@ if(state == cachefetch & (re | we))
                             else
                                 begin
                                     if(we)
-                                        whit = 1'b0;
+                                        begin
+                                            whit = 1'b0;
+                                            times = times + 1;
+                                        end
                                     else if(re)
-                                        rhit = 1'b0;
+                                        begin
+                                            rhit = 1'b0;
+                                            times = times + 1;
+                                        end
                                 end
                         cachetable[0][1][2:0]:
                             if(cachetable[0][1][3]) // valid?
@@ -272,16 +280,28 @@ if(state == cachefetch & (re | we))
                             else
                                 begin
                                     if(we)
-                                        whit = 1'b0;
+                                        begin
+                                            whit = 1'b0;
+                                            times = times + 1;
+                                        end
                                     else if(re)
-                                        rhit = 1'b0;
+                                        begin
+                                            rhit = 1'b0;
+                                            times = times + 1;
+                                        end
                                 end
                         default:    
                                 begin
                                     if(we)
-                                        whit = 1'b0;
+                                        begin
+                                            whit = 1'b0;
+                                            times = times + 1;
+                                        end
                                     else if(re)
-                                        rhit = 1'b0;
+                                        begin
+                                            rhit = 1'b0;
+                                            times = times + 1;
+                                        end
                                 end
                     endcase
                 end
@@ -302,9 +322,15 @@ if(state == cachefetch & (re | we))
                             else
                                 begin
                                     if(we)
-                                        whit = 1'b0;
+                                        begin
+                                            whit = 1'b0;
+                                            times = times + 1;
+                                        end
                                     else if(re)
-                                        rhit = 1'b0;
+                                        begin
+                                            rhit = 1'b0;
+                                            times = times + 1;
+                                        end
                                 end
                         cachetable[1][1][2:0]:
                             if(cachetable[1][1][3]) // valid?
@@ -320,16 +346,28 @@ if(state == cachefetch & (re | we))
                             else
                                 begin
                                     if(we)
-                                        whit = 1'b0;
+                                        begin
+                                            whit = 1'b0;
+                                            times = times + 1;
+                                        end
                                     else if(re)
-                                        rhit = 1'b0;
+                                        begin
+                                            rhit = 1'b0;
+                                            times = times + 1;
+                                        end
                                 end
                         default:    
                                 begin
                                     if(we)
-                                        whit = 1'b0;
+                                        begin
+                                            whit = 1'b0;
+                                            times = times + 1;
+                                        end
                                     else if(re)
-                                        rhit = 1'b0;
+                                        begin
+                                            rhit = 1'b0;
+                                            times = times + 1;
+                                        end
                                 end
                     endcase
                 end
@@ -350,9 +388,15 @@ if(state == cachefetch & (re | we))
                             else
                                 begin
                                     if(we)
-                                        whit = 1'b0;
+                                        begin
+                                            whit = 1'b0;
+                                            times = times + 1;
+                                        end
                                     else if(re)
-                                        rhit = 1'b0;
+                                        begin
+                                            rhit = 1'b0;
+                                            times = times + 1;
+                                        end
                                 end
                         cachetable[2][1][2:0]:
                             if(cachetable[2][1][3]) // valid?
@@ -368,16 +412,28 @@ if(state == cachefetch & (re | we))
                             else
                                 begin
                                     if(we)
-                                        whit = 1'b0;
+                                        begin
+                                            whit = 1'b0;
+                                            times = times + 1;
+                                        end
                                     else if(re)
-                                        rhit = 1'b0;
+                                        begin
+                                            rhit = 1'b0;
+                                            times = times + 1;
+                                        end
                                 end
                         default: 
                                 begin
                                     if(we)
-                                        whit = 1'b0;
+                                        begin
+                                            whit = 1'b0;
+                                            times = times + 1;
+                                        end
                                     else if(re)
-                                        rhit = 1'b0;
+                                        begin
+                                            rhit = 1'b0;
+                                            times = times + 1;
+                                        end
                                 end
                     endcase
                 end
@@ -398,9 +454,15 @@ if(state == cachefetch & (re | we))
                             else
                                 begin
                                     if(we)
-                                        whit = 1'b0;
+                                        begin
+                                            whit = 1'b0;
+                                            times = times + 1;
+                                        end
                                     else if(re)
-                                        rhit = 1'b0;
+                                        begin
+                                            rhit = 1'b0;
+                                            times = times + 1;
+                                        end
                                 end
                         cachetable[3][1][2:0]:
                             if(cachetable[3][1][3]) // valid?
@@ -416,16 +478,28 @@ if(state == cachefetch & (re | we))
                             else
                                 begin
                                     if(we)
-                                        whit = 1'b0;
+                                        begin
+                                            whit = 1'b0;
+                                            times = times + 1;
+                                        end
                                     else if(re)
-                                        rhit = 1'b0;
+                                        begin
+                                            rhit = 1'b0;
+                                            times = times + 1;
+                                        end
                                 end
                         default:    
                                 begin
                                     if(we)
-                                        whit = 1'b0;
+                                        begin
+                                            whit = 1'b0;
+                                            times = times + 1;
+                                        end
                                     else if(re)
-                                        rhit = 1'b0;
+                                        begin
+                                            rhit = 1'b0;
+                                            times = times + 1;
+                                        end
                                 end
                     endcase
                 end

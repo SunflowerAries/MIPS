@@ -70,7 +70,7 @@ assign rtD = instrD[20:16];
 assign rdD = instrD[15:11];
 assign shamtD = instrD[10:6];
 
-assign flushD = (pcsrcD & ~stallD & ~branpredD) | jumpD[0] | jumpD[1] | ret | (~pcsrcD & branpredD & ~stallD) | waitinstr;
+assign flushD = (pcsrcD & ~stallD & ~branpredD) | jumpD[0] | jumpD[1] | ret | (~pcsrcD & branpredD & ~stallD) | waitinstr & ~stallD;
 
 flopenrc #(32) r1E(clk, reset, ~stallE, flushE, srcaD, srcaE);
 flopenrc #(32) r2E(clk, reset, ~stallE, flushE, srcbD, srcbE);

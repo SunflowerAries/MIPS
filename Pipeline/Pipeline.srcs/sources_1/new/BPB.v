@@ -80,8 +80,10 @@ always@(posedge clk)
             end
     end
     
-always@(brF)
+always@(*)
     begin
+        Pbranch = 1'b0;
+        Destout = 32'b0;
         if(brF)
             case(IAdr)
                 Table[0][40:33]: 
@@ -105,8 +107,6 @@ always@(brF)
                         Destout = Table[3][31:0];
                     end
             endcase
-        else
-            Pbranch = 1'b0;
     end
     
 always@(*)
