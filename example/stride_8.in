@@ -55,11 +55,5 @@ add $t0, $t0, $s0
 addi $v0, $v0, 32
 addi $v1, $0, 540
 bne $v0, $v1, erhu
-addi $v0, $0, 32
-gayquan:
-lw $s0, 0($v0)
-add $t0, $t0, $s0
-addi $v0, $v0, 32
-addi $v1, $0, 544
-bne $v0, $v1, gayquan
+
 
