@@ -23,5 +23,14 @@ def sum(stride=1, num=128):
             sum += list[i + j*stride]
             print(list[i + j*stride], hex(sum))
 
+def rewrite():
+    f = open('data.bak', 'r', encoding='utf-8')
+    i = 0
+    for line in f.readlines():
+        with open('rewrite.bak', 'a') as g:
+            g.write('{RAM[%d], RAM[%d], RAM[%d], RAM[%d]}<=32\'h%d;'%(i+3, i+2, i+1, i, int(re.findall(r"32'h(.+);", line)[0])))
+            g.write('\n')
+        i += 4
 # generate(num=128)
-sum(stride=8, num=128)
+#sum(stride=8, num=128)
+rewrite()
