@@ -51,6 +51,7 @@ module top(input CLK100MHZ,
     mips mips(clock, clock190, SW[0], waitinstr, waitdata, pc, instr, memwrite, memtoreg, dataAddr, writedata, readdata, SW[5:1], S, AN);
     icache icache(clock, SW[0], pc[9:2], iblock, waitinstr, instr);
     imem imem(pc[9:2], iblock);
-    dcache dcache(clock, SW[0], memwrite, memtoreg, dataAddr[9:2], writedata, dblock_m, waitdata, cachetomem, readdata, blockAddr, dblock_c);
+    //dcache dcache(clock, SW[0], memwrite, memtoreg, dataAddr[9:2], writedata, dblock_m, waitdata, cachetomem, readdata, blockAddr, dblock_c);
+    dcache_v #(2, 2, 3) dcache(clock, SW[0], memwrite, memtoreg, dataAddr[9:2], writedata, dblock_m, waitdata, cachetomem, readdata, blockAddr, dblock_c);
     dmem dmem(clock, cachetomem, {dataAddr[9:5], 3'b000}, blockAddr, dblock_c, dblock_m);
 endmodule

@@ -60,115 +60,29 @@ always@(posedge clk)
         else if(state == cachefetch & (re | we))
             begin
                 wm = 1'b0;
-                case(Addr[4:3]) //to locate the set
-                    2'b00:
-                        begin
-                            case(Addr[7:5]) // make sure if we have the block and in which line
-                                cachetable[0][0][2:0]:
-                                    if(cachetable[0][0][3]) // valid?
-                                        begin
-                                            if(we)
-                                                begin
-                                                    cachetable[0][0][5] = 1'b1;
-                                                    cachedata[0][0][Addr[2:0]] = writedata;
-                                                end
-                                            cachetable[0][0][4] = 1'b1;
-                                            cachetable[0][1][4] = 1'b0;
-                                        end
-                                cachetable[0][1][2:0]:
-                                    if(cachetable[0][1][3]) // valid?
-                                        begin
-                                            if(we)
-                                                begin
-                                                    cachetable[0][1][5] = 1'b1;
-                                                    cachedata[0][1][Addr[2:0]] = writedata;
-                                                end
-                                            cachetable[0][0][4] = 1'b0;
-                                            cachetable[0][1][4] = 1'b1;
-                                        end
-                            endcase
-                        end
-                    2'b01:
-                        begin
-                            case(Addr[7:5])
-                                cachetable[1][0][2:0]:
-                                    if(cachetable[1][0][3]) // valid?
-                                        begin
-                                            if(we)
-                                                begin
-                                                    cachetable[1][0][5] = 1'b1;
-                                                    cachedata[1][0][Addr[2:0]] = writedata;
-                                                end
-                                            cachetable[1][0][4] = 1'b1;
-                                            cachetable[1][1][4] = 1'b0;
-                                        end
-                                cachetable[1][1][2:0]:
-                                    if(cachetable[1][1][3]) // valid?
-                                        begin
-                                            if(we)
-                                                begin
-                                                    cachetable[1][1][5] = 1'b1;
-                                                    cachedata[1][1][Addr[2:0]] = writedata;
-                                                end
-                                            cachetable[1][0][4] = 1'b0;
-                                            cachetable[1][1][4] = 1'b1;
-                                        end
-                            endcase
-                        end
-                    2'b10:
-                        begin
-                            case(Addr[7:5])
-                                cachetable[2][0][2:0]:
-                                    if(cachetable[2][0][3]) // valid?
-                                        begin
-                                            if(we)
-                                                begin
-                                                    cachetable[2][0][5] = 1'b1;
-                                                    cachedata[2][0][Addr[2:0]] = writedata;
-                                                end
-                                            cachetable[2][0][4] = 1'b1;
-                                            cachetable[2][1][4] = 1'b0;
-                                        end
-                                cachetable[2][1][2:0]:
-                                    if(cachetable[2][1][3]) // valid?
-                                        begin
-                                            if(we)
-                                                begin
-                                                    cachetable[2][1][5] = 1'b1;
-                                                    cachedata[2][1][Addr[2:0]] = writedata;
-                                                end
-                                            cachetable[2][0][4] = 1'b0;
-                                            cachetable[2][1][4] = 1'b1;
-                                        end
-                            endcase
-                        end
-                    2'b11:
-                        begin
-                            case(Addr[7:5])
-                                cachetable[3][0][2:0]:
-                                    if(cachetable[3][0][3]) // valid?
-                                        begin
-                                            if(we)
-                                                begin
-                                                    cachetable[3][0][5] = 1'b1;
-                                                    cachedata[3][0][Addr[2:0]] = writedata;
-                                                end
-                                            cachetable[3][0][4] = 1'b1;
-                                            cachetable[3][1][4] = 1'b0;
-                                        end
-                                cachetable[3][1][2:0]:
-                                    if(cachetable[3][1][3]) // valid?
-                                        begin
-                                            if(we)
-                                                begin
-                                                    cachetable[3][1][5] = 1'b1;
-                                                    cachedata[3][1][Addr[2:0]] = writedata;
-                                                end
-                                            cachetable[3][0][4] = 1'b0;
-                                            cachetable[3][1][4] = 1'b1;
-                                        end
-                            endcase
-                        end
+                case(Addr[7:5]) // make sure if we have the block and in which line
+                    cachetable[Addr[4:3]][0][2:0]:
+                        if(cachetable[Addr[4:3]][0][3]) // valid?
+                            begin
+                                if(we)
+                                    begin
+                                        cachetable[Addr[4:3]][0][5] = 1'b1;
+                                        cachedata[Addr[4:3]][0][Addr[2:0]] = writedata;
+                                    end
+                                cachetable[Addr[4:3]][0][4] = 1'b1;
+                                cachetable[Addr[4:3]][1][4] = 1'b0;
+                            end
+                    cachetable[Addr[4:3]][1][2:0]:
+                        if(cachetable[Addr[4:3]][1][3]) // valid?
+                            begin
+                                if(we)
+                                    begin
+                                        cachetable[Addr[4:3]][1][5] = 1'b1;
+                                        cachedata[Addr[4:3]][1][Addr[2:0]] = writedata;
+                                    end
+                                cachetable[Addr[4:3]][0][4] = 1'b0;
+                                cachetable[Addr[4:3]][1][4] = 1'b1;
+                            end
                 endcase
             end
         else if(state == memfetch & (re | we))
@@ -238,271 +152,68 @@ always@(posedge clk)
 always@(negedge clk)
 if(state == cachefetch & (re | we))
     begin
-        case(Addr[4:3]) //to locate the set
-            2'b00:
-                begin
-                    case(Addr[7:5]) // make sure if we have the block and in which line
-                        cachetable[0][0][2:0]:
-                            if(cachetable[0][0][3]) // valid?
-                                begin
-                                    if(we)
-                                        whit = 1'b1;
-                                    else if(re)
-                                        begin
-                                            rd = cachedata[0][0][Addr[2:0]];
-                                            rhit = 1'b1;
-                                        end
-                                end
-                            else
-                                begin
-                                    if(we)
-                                        begin
-                                            whit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                    else if(re)
-                                        begin
-                                            rhit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                end
-                        cachetable[0][1][2:0]:
-                            if(cachetable[0][1][3]) // valid?
-                                begin
-                                    if(we)
-                                        whit = 1'b1;
-                                    else if(re)
-                                        begin
-                                            rd = cachedata[0][1][Addr[2:0]];
-                                            rhit = 1'b1;
-                                        end
-                                end
-                            else
-                                begin
-                                    if(we)
-                                        begin
-                                            whit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                    else if(re)
-                                        begin
-                                            rhit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                end
-                        default:    
-                                begin
-                                    if(we)
-                                        begin
-                                            whit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                    else if(re)
-                                        begin
-                                            rhit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                end
-                    endcase
-                end
-            2'b01:
-                begin
-                    case(Addr[7:5])
-                        cachetable[1][0][2:0]:
-                            if(cachetable[1][0][3]) // valid?
-                                begin
-                                    if(we)
-                                        whit = 1'b1;
-                                    else if(re)
-                                        begin
-                                            rd = cachedata[1][0][Addr[2:0]];
-                                            rhit = 1'b1;
-                                        end
-                                end
-                            else
-                                begin
-                                    if(we)
-                                        begin
-                                            whit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                    else if(re)
-                                        begin
-                                            rhit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                end
-                        cachetable[1][1][2:0]:
-                            if(cachetable[1][1][3]) // valid?
-                                begin
-                                    if(we)
-                                        whit = 1'b1;
-                                    else if(re)
-                                        begin
-                                            rd = cachedata[1][1][Addr[2:0]];
-                                            rhit = 1'b1;
-                                        end
-                                end
-                            else
-                                begin
-                                    if(we)
-                                        begin
-                                            whit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                    else if(re)
-                                        begin
-                                            rhit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                end
-                        default:    
-                                begin
-                                    if(we)
-                                        begin
-                                            whit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                    else if(re)
-                                        begin
-                                            rhit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                end
-                    endcase
-                end
-            2'b10:
-                begin
-                    case(Addr[7:5])
-                        cachetable[2][0][2:0]:
-                            if(cachetable[2][0][3]) // valid?
-                                begin
-                                    if(we)
-                                        whit = 1'b1;
-                                    else if(re)
-                                        begin
-                                            rd = cachedata[2][0][Addr[2:0]];
-                                            rhit = 1'b1;
-                                        end
-                                end
-                            else
-                                begin
-                                    if(we)
-                                        begin
-                                            whit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                    else if(re)
-                                        begin
-                                            rhit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                end
-                        cachetable[2][1][2:0]:
-                            if(cachetable[2][1][3]) // valid?
-                                begin
-                                    if(we)
-                                        whit = 1'b1;
-                                    else if(re)
-                                        begin
-                                            rd = cachedata[2][1][Addr[2:0]];
-                                            rhit = 1'b1;
-                                        end
-                                end
-                            else
-                                begin
-                                    if(we)
-                                        begin
-                                            whit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                    else if(re)
-                                        begin
-                                            rhit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                end
-                        default: 
-                                begin
-                                    if(we)
-                                        begin
-                                            whit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                    else if(re)
-                                        begin
-                                            rhit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                end
-                    endcase
-                end
-            2'b11:
-                begin
-                    case(Addr[7:5])
-                        cachetable[3][0][2:0]:
-                            if(cachetable[3][0][3]) // valid?
-                                begin
-                                    if(we)
-                                        whit = 1'b1;
-                                    else if(re)
-                                        begin
-                                            rd = cachedata[3][0][Addr[2:0]];
-                                            rhit = 1'b1;
-                                        end
-                                end
-                            else
-                                begin
-                                    if(we)
-                                        begin
-                                            whit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                    else if(re)
-                                        begin
-                                            rhit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                end
-                        cachetable[3][1][2:0]:
-                            if(cachetable[3][1][3]) // valid?
-                                begin
-                                    if(we)
-                                        whit = 1'b1;
-                                    else if(re)
-                                        begin
-                                            rd = cachedata[3][1][Addr[2:0]];
-                                            rhit = 1'b1;
-                                        end
-                                end
-                            else
-                                begin
-                                    if(we)
-                                        begin
-                                            whit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                    else if(re)
-                                        begin
-                                            rhit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                end
-                        default:    
-                                begin
-                                    if(we)
-                                        begin
-                                            whit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                    else if(re)
-                                        begin
-                                            rhit = 1'b0;
-                                            times = times + 1;
-                                        end
-                                end
-                    endcase
-                end
+        case(Addr[7:5]) // make sure if we have the block and in which line
+            cachetable[Addr[4:3]][0][2:0]:
+                if(cachetable[Addr[4:3]][0][3]) // valid?
+                    begin
+                        if(we)
+                            whit = 1'b1;
+                        else if(re)
+                            begin
+                                rd = cachedata[Addr[4:3]][0][Addr[2:0]];
+                                rhit = 1'b1;
+                            end
+                    end
+                else
+                    begin
+                        if(we)
+                            begin
+                                whit = 1'b0;
+                                times = times + 1;
+                            end
+                        else if(re)
+                            begin
+                                rhit = 1'b0;
+                                times = times + 1;
+                            end
+                    end
+            cachetable[Addr[4:3]][1][2:0]:
+                if(cachetable[Addr[4:3]][1][3]) // valid?
+                    begin
+                        if(we)
+                            whit = 1'b1;
+                        else if(re)
+                            begin
+                                rd = cachedata[Addr[4:3]][1][Addr[2:0]];
+                                rhit = 1'b1;
+                            end
+                    end
+                else
+                    begin
+                        if(we)
+                            begin
+                                whit = 1'b0;
+                                times = times + 1;
+                            end
+                        else if(re)
+                            begin
+                                rhit = 1'b0;
+                                times = times + 1;
+                            end
+                    end
+            default:    
+                    begin
+                        if(we)
+                            begin
+                                whit = 1'b0;
+                                times = times + 1;
+                            end
+                        else if(re)
+                            begin
+                                rhit = 1'b0;
+                                times = times + 1;
+                            end
+                    end
         endcase
     end
 assign waitdata = (~rhit & re) | (~whit & we);

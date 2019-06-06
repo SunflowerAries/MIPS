@@ -50,75 +50,19 @@ always@(posedge clk)
             end
         else if(state == cachefetch)
             begin
-                case(Addr[4:3]) //to locate the set
-                    2'b00:
-                        begin
-                            case(Addr[7:5]) // make sure if we have the block and in which line
-                                cachetable[0][0][2:0]:
-                                    if(cachetable[0][0][3]) // valid?
-                                        begin
-                                            cachetable[0][0][4] = 1'b1;
-                                            cachetable[0][1][4] = 1'b0;
-                                        end
-                                cachetable[0][1][2:0]:
-                                    if(cachetable[0][1][3]) // valid?
-                                        begin
-                                            cachetable[0][0][4] = 1'b0;
-                                            cachetable[0][1][4] = 1'b1;
-                                        end
-                            endcase
-                        end
-                    2'b01:
-                        begin
-                            case(Addr[7:5])
-                                cachetable[1][0][2:0]:
-                                    if(cachetable[1][0][3]) // valid?
-                                        begin
-                                            cachetable[1][0][4] = 1'b1;
-                                            cachetable[1][1][4] = 1'b0;
-                                        end
-                                cachetable[1][1][2:0]:
-                                    if(cachetable[1][1][3]) // valid?
-                                        begin
-                                            cachetable[1][0][4] = 1'b0;
-                                            cachetable[1][1][4] = 1'b1;
-                                        end
-                            endcase
-                        end
-                    2'b10:
-                        begin
-                            case(Addr[7:5])
-                                cachetable[2][0][2:0]:
-                                    if(cachetable[2][0][3]) // valid?
-                                        begin
-                                            cachetable[2][0][4] = 1'b1;
-                                            cachetable[2][1][4] = 1'b0;
-                                        end
-                                cachetable[2][1][2:0]:
-                                    if(cachetable[2][1][3]) // valid?
-                                        begin
-                                            cachetable[2][0][4] = 1'b0;
-                                            cachetable[2][1][4] = 1'b1;
-                                        end
-                            endcase
-                        end
-                    2'b11:
-                        begin
-                            case(Addr[7:5])
-                                cachetable[3][0][2:0]:
-                                    if(cachetable[3][0][3]) // valid?
-                                        begin
-                                            cachetable[3][0][4] = 1'b1;
-                                            cachetable[3][1][4] = 1'b0;
-                                        end
-                                cachetable[3][1][2:0]:
-                                    if(cachetable[3][1][3]) // valid?
-                                        begin
-                                            cachetable[3][0][4] = 1'b0;
-                                            cachetable[3][1][4] = 1'b1;
-                                        end
-                            endcase
-                        end
+                case(Addr[7:5]) // make sure if we have the block and in which line
+                    cachetable[Addr[4:3]][0][2:0]:
+                        if(cachetable[Addr[4:3]][0][3]) // valid?
+                            begin
+                                cachetable[Addr[4:3]][0][4] = 1'b1;
+                                cachetable[Addr[4:3]][1][4] = 1'b0;
+                            end
+                    cachetable[Addr[4:3]][1][2:0]:
+                        if(cachetable[Addr[4:3]][1][3]) // valid?
+                            begin
+                                cachetable[Addr[4:3]][0][4] = 1'b0;
+                                cachetable[Addr[4:3]][1][4] = 1'b1;
+                            end
                 endcase
             end
         else if(state == memfetch)
@@ -172,95 +116,24 @@ always@(posedge clk)
 always@(negedge clk)
 if(state == cachefetch)
     begin
-        case(Addr[4:3]) //to locate the set
-            2'b00:
-                begin
-                    case(Addr[7:5]) // make sure if we have the block and in which line
-                        cachetable[0][0][2:0]:
-                            if(cachetable[0][0][3]) // valid?
-                                begin
-                                    rd = cachedata[0][0][Addr[2:0]];
-                                    hit = 1'b1;
-                                end
-                            else
-                                hit = 1'b0;
-                        cachetable[0][1][2:0]:
-                            if(cachetable[0][1][3]) // valid?
-                                begin
-                                    rd = cachedata[0][1][Addr[2:0]];
-                                    hit = 1'b1;
-                                end
-                            else
-                                hit = 1'b0;
-                        default:    hit = 1'b0;
-                    endcase
-                end
-            2'b01:
-                begin
-                    case(Addr[7:5])
-                        cachetable[1][0][2:0]:
-                            if(cachetable[1][0][3]) // valid?
-                                begin
-                                    rd = cachedata[1][0][Addr[2:0]];
-                                    hit = 1'b1;
-                                end
-                            else
-                                hit = 1'b0;
-                        cachetable[1][1][2:0]:
-                            if(cachetable[1][1][3]) // valid?
-                                begin
-                                    rd = cachedata[1][1][Addr[2:0]];
-                                    hit = 1'b1;
-                                end
-                            else
-                                hit = 1'b0;
-                        default:    hit = 1'b0;
-                    endcase
-                end
-            2'b10:
-                begin
-                    case(Addr[7:5])
-                        cachetable[2][0][2:0]:
-                            if(cachetable[2][0][3]) // valid?
-                                begin
-                                    rd = cachedata[2][0][Addr[2:0]];
-                                    hit = 1'b1;
-                                end
-                            else
-                                hit = 1'b0;
-                        cachetable[2][1][2:0]:
-                            if(cachetable[2][1][3]) // valid?
-                                begin
-                                    rd = cachedata[2][1][Addr[2:0]];
-                                    hit = 1'b1;
-                                end
-                            else
-                                hit = 1'b0;
-                        default: hit = 1'b0;
-                    endcase
-                end
-            2'b11:
-                begin
-                    case(Addr[7:5])
-                        cachetable[3][0][2:0]:
-                            if(cachetable[3][0][3]) // valid?
-                                begin
-                                    rd = cachedata[3][0][Addr[2:0]];
-                                    hit = 1'b1;
-                                end
-                            else
-                                hit = 1'b0;
-                        cachetable[3][1][2:0]:
-                            if(cachetable[3][1][3]) // valid?
-                                begin
-                                    rd = cachedata[3][1][Addr[2:0]];
-                                    hit = 1'b1;
-                                end
-                            else
-                                hit = 1'b0;
-                        default:    hit = 1'b0;
-                    endcase
-                end
+        case(Addr[7:5]) // make sure if we have the block and in which line
+            cachetable[Addr[4:3]][0][2:0]:
+                if(cachetable[Addr[4:3]][0][3]) // valid?
+                    begin
+                        rd = cachedata[Addr[4:3]][0][Addr[2:0]];
+                        hit = 1'b1;
+                    end
+                else
+                    hit = 1'b0;
+            cachetable[Addr[4:3]][1][2:0]:
+                if(cachetable[Addr[4:3]][1][3]) // valid?
+                    begin
+                        rd = cachedata[Addr[4:3]][1][Addr[2:0]];
+                        hit = 1'b1;
+                    end
+                else
+                    hit = 1'b0;
+            default:    hit = 1'b0;
         endcase
     end
 assign waitinstr = ~hit;
