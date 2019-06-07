@@ -87,7 +87,7 @@ Cache与主存间的映射关系如下：
 
 ### 2.1 Cache硬件设计
 
-　　我首先设计了一个4组的2路组相联iCache和dCache，其中每一行中有8个数据(4 bytes)，具体如下：
+　　我首先设计了一个4组的2路组相联iCache和dCache，其中每一行中有8个字(4 bytes)，具体如下：
 
 <div align="center">
     <img src="Pic/Cache.png" style="margin:0; padding:0">
@@ -97,7 +97,7 @@ Cache与主存间的映射关系如下：
 </div>
 　　当Cache得到一个Mem地址并确认是访存指令时，首先根据地址的[4:3]判断出访问的数据单元所在内存块映射到Cache哪一个组中，然后查Cachetable中对应组中每行的[2:0]（Tag字段），如果Tag字段与Mem地址的[7:5]匹配并且Cachetable中对应行的Valid位为1时则Hit，从Cachedata对应行中根据内存地址的[2:0]（块内地址偏移量）取出数据；若Cachetable对应组中两行的Tag字段均不能与Mem地址[7:5]匹配或匹配上的行Valid位为0则Miss。
 
-　　Miss时则需要从Mem中读出数据单元所在Mem块（相邻的8个数据），如果Cachetable对应组中存在一行的Valid位为0则为空闲行，直接将读出的Mem块写入；如果Cachetable对应组中不存在空闲行，则需要替换策略，在最开始的设计中，为简化设计我将最近一次访问该组时没有访问的一行替换，即每一次访问任意组中一行时都将这一行优先级置为1，组中另一行置为0，每次替换时将优先级为0的替换掉。当需要替换某一行时，还需要查Cachetable中对应行的Dirty位如果为1则需要将这一行写回Mem，如果为0则直接用Mem读出的块覆盖。
+　　Miss时则需要从Mem中读出数据单元所在Mem块（相邻的8个字），如果Cachetable对应组中存在一行的Valid位为0则为空闲行，直接将读出的Mem块写入；如果Cachetable对应组中不存在空闲行，则需要替换策略，在最开始的设计中，为简化设计我将最近一次访问该组时没有访问的一行替换，即每一次访问任意组中一行时都将这一行优先级置为1，组中另一行置为0，每次替换时将优先级为0的替换掉。当需要替换某一行时，还需要查Cachetable中对应行的Dirty位如果为1则需要将这一行写回Mem，如果为0则直接用Mem读出的块覆盖。
 
 　　在进一步的优化中，我将dCache设计为由参数控制的组相联形式，包括以下参数：SET，LINE，OFFSET。其中SET，OFFSET表示Mem地址中组号，块内地址偏移量的字段位数，LINE则表示每一组中的行数，因为我的Mem地址位数为8，所以OFFSET和SET和应不超过8。并且我借鉴了LRU中的老化算法，将Cachetable中LRU位扩充为4位以记录最近4次状态。每当访问Cache中一个组时，组内所有行的LRU状态均逻辑右移1位，并将当前访问行的LRU首位置为1。替换时，首先将每一行的LRU状态中1的数目累加表示最近4次访问该组时每一行被访问的次数，如果相同则直接比较LRU状态位的大小（越近被访问则LRU状态位越大）以决定被替换的行。替换后，将该行的LRU状态位置为4'b1000。
 
@@ -165,7 +165,7 @@ assign flushD = (pcsrcD & ~stallD & ~branpredD) | jumpD[0] | jumpD[1] | ret | (~
 
 ## 3 模拟测试
 
-　　我通过张作柏同学的<a style="text-decoration:none;" href="https://github.com/Oxer11/MIPS/tree/master/Assembler/assembler.py">译码器</a>生成了以不同步幅对随机生成数据加和的指令：stride_1，stride_2，stride_4，stride_8，stride_16。其中总共随机生成128个数据，而我的dCache大小为4组，每组两行，每行可容纳8个数据单元(4 bytes = 32bits)。以下图片需要解释的是：rhit指读命中，times指未命中的次数，寄存器8为t0，是存储加和结果的寄存器。
+　　我通过张作柏同学的<a style="text-decoration:none;" href="https://github.com/Oxer11/MIPS/tree/master/Assembler/assembler.py">译码器</a>生成了以不同步幅对随机生成数据加和的指令：stride_1，stride_2，stride_4，stride_8，stride_16。其中总共随机生成128个字，而我的dCache大小为4组，每组两行，每行可容纳8个字(4 bytes = 32bits)。以下图片需要解释的是：rhit指读命中，times指未命中的次数，寄存器8为t0，是存储加和结果的寄存器。
 
 　　当以步幅为1遍历Mem并进行加和时，结果如下：
 

@@ -17,5 +17,5 @@
 0x34 : addi $t3, $t3, -4    | 216bfffc
 0x38 : lw $t8, 0($t3)       | 8d780000
 0x3c : sw $t4, 0($t3)       | ad6c0000
-0x40 : lw $t8, 0($t5)       | 8db80000
+0x40 : sw $t8, 0($t5)       | adb80000
 0x44 : bne $0, $t3, For     | 1560fff1

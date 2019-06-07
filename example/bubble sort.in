@@ -17,5 +17,5 @@ bne $sp, $t3, for
 addi $t3, $t3, -4
 lw $t8, 0($t3)
 sw $t4, 0($t3)
-lw $t8, 0($t5)
+sw $t8, 0($t5)
 bne $0, $t3, For

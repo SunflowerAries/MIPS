@@ -30,8 +30,8 @@ module clkdiv(
         q <= 0;
     always@(posedge mclk)
         q <= q + 1;
-    assign clk1 = q[0]; //1.32s 26
-    assign clk2 = q[0]; //0.16s 23
+    assign clk1 = q[26]; //1.32s 26
+    assign clk2 = q[23]; //0.16s 23
     assign clk = !choice & clk1 | choice & clk2;
     assign clk190 = q[16];
 endmodule

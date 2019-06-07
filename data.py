@@ -1,5 +1,7 @@
 import random
 import re
+import os
+import sys
 def generate(num=128):
     f = open("./data.bak", 'w+')
     i = 0
@@ -31,6 +33,19 @@ def rewrite():
             g.write('{RAM[%d], RAM[%d], RAM[%d], RAM[%d]}<=32\'h%d;'%(i+3, i+2, i+1, i, int(re.findall(r"32'h(.+);", line)[0])))
             g.write('\n')
         i += 4
+
+def drewrite():
+    os.chdir(os.getcwd() + '\\' + 'example')
+    FileList = os.listdir(os.getcwd())
+    for file in filter(lambda s: True if s.find('.txt') != -1 else False, FileList):
+        f = open(file, 'r', encoding='utf-8')
+        i = 0
+        for line in f.readlines():
+            with open('new' + file[0:len(file)-4] + '.txt', 'a') as g:
+                g.write('RAM[%d]<=32\'h%s;'%(i, re.findall(r"32'h(.+);", line)[0]))
+                g.write('\n')
+            i += 1
 # generate(num=128)
-#sum(stride=8, num=128)
-rewrite()
+#sum(stride=1, num=128)
+#rewrite()
+drewrite()
