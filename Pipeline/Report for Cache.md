@@ -105,7 +105,7 @@ Cache与主存间的映射关系如下：
 
 ### 2.2 Cache运行机制
 
-#### 2.2.1 Cache状态机设计
+#### 2.2.1 Cache时序设计
 
 　　当Cache命中时，则一个时钟周期就可以获得对应的数据单元，否则则需要从Mem中读出内存块。在实践中我设计了一个有限状态机（FSM）来模拟该过程：
 
@@ -116,6 +116,18 @@ Cache与主存间的映射关系如下：
     </p>
 </div>
 　　如果当前指令需要访存并且Miss，此时需要从cachefetch状态跳转至waiting_1，时钟上升沿到来时再跳转至waiting_2，memfetch。memfetch阶段完成对应cachetable，cachedata的更新。再一次跳转至cachefetch时从Cache中读出相应数据。
+
+　　Cache从Mem中读出的数据写回是在memfetch阶段完成后（cachefetch的上升沿），如果rhit、whit等信号的更新和数据的更新在同一个always模块中，则rhit信号在时钟上升沿更新时数据块还没有到位，因此应该将信号和数据分离，大致逻辑如下：
+
+```
+always@(posedge clk)
+	refresh table/block
+always@(negedge clk)
+	refresh signal
+	get data
+```
+
+因为信号只需要在cachefetch阶段确定以告诉流水线下一个时钟周期是stall还是正常运行，同样如果需要读出数据也只需要在下一个时钟上升沿到来前稳定读出的数据即可（如果读数据和更新数据在同一个模块，那么每次更新前后读出数据都有延后），所以均可以在一个时钟周期的下降沿再更新。
 
 #### 2.2.2 Cache与流水线交互
 
