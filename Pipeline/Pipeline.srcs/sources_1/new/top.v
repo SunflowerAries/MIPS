@@ -43,15 +43,16 @@ module top(input CLK100MHZ,
     wire [31:0] writedata, dataAddr;
     wire clock, clock190;
     wire [31:0] pc, instr, readdata;
-    wire memwrite, waitinstr, waitdata, cachetomem, memtoreg;
+    wire memwrite, waitinstr, waitdata, cachetomem, atom_memwrite, memtoreg, lock;
     wire icacheread;
     wire [7:0] blockAddr;
-    wire [255:0] iblock, dblock_m, dblock_c;// if have to replace we may use dblock_c refer to the replaced block from cache
+    wire [255:0] iblock;
+    wire [255:0] dblock_m, dblock_c;// if have to replace we may use dblock_c refer to the replaced block from cache
     clkdiv myClk(CLK100MHZ, clock, clock190, SW[6]);
-    mips mips(clock, clock190, SW[0], waitinstr, waitdata, pc, instr, memwrite, memtoreg, dataAddr, writedata, readdata, SW[5:1], S, AN);
+    mips mips(clock, clock190, SW[0], waitinstr, waitdata, pc, instr, memwrite, atom_memwrite, memtoreg, lock, dataAddr, writedata, readdata, SW[5:1], S, AN);
     icache icache(clock, SW[0], pc[9:2], iblock, waitinstr, instr);
     imem imem(pc[9:2], iblock);
     //dcache dcache(clock, SW[0], memwrite, memtoreg, dataAddr[9:2], writedata, dblock_m, waitdata, cachetomem, readdata, blockAddr, dblock_c);
-    dcache_v #(2, 2, 3) dcache(clock, SW[0], memwrite, memtoreg, dataAddr[9:2], writedata, dblock_m, waitdata, cachetomem, readdata, blockAddr, dblock_c);
+    dcache_v #(2, 2, 3) dcache(clock, SW[0], (memwrite | (atom_memwrite & lock)), memtoreg, dataAddr[9:2], writedata, dblock_m, waitdata, cachetomem, readdata, blockAddr, dblock_c);
     dmem dmem(clock, cachetomem, {dataAddr[9:5], 3'b000}, blockAddr, dblock_c, dblock_m);
 endmodule

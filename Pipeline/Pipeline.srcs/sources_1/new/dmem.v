@@ -135,7 +135,7 @@ initial
         RAM[126] <= 32'h1e;
         RAM[127] <= 32'h1d;
     end
-assign rd = {RAM[rAddr+7], RAM[rAddr+6], RAM[rAddr+5], RAM[rAddr+4], RAM[rAddr+3], RAM[rAddr+2], RAM[rAddr+1], RAM[rAddr]};
+assign rd = {RAM[rAddr+7], RAM[rAddr+6], RAM[rAddr+5], RAM[rAddr+4], RAM[rAddr+3], RAM[rAddr+2], RAM[rAddr+1], RAM[rAddr]}; //RAM[rAddr+7], RAM[rAddr+6], RAM[rAddr+5], RAM[rAddr+4], 
 always@(posedge clk)
     if(we)
         {RAM[wAddr+7], RAM[wAddr+6], RAM[wAddr+5], RAM[wAddr+4], RAM[wAddr+3], RAM[wAddr+2], RAM[wAddr+1], RAM[wAddr]} = wd;

@@ -23,7 +23,7 @@
 module dcache_v #(parameter SET = 2, 
                   parameter LINE = 2,
                   parameter OFFSET = 3)
-                  (input clk, reset, we, re, 
+                  (input clk, reset, we, re,
                    input [7:0] Addr,
                    input [31:0] writedata,
                    input [(2**OFFSET) * 32 - 1:0] dblock_m,
@@ -41,7 +41,7 @@ parameter waiting_1  = 2'b01;
 parameter waiting_2  = 2'b10;
 parameter memfetch   = 2'b11;
 reg rhit, whit;
-integer times, rep;
+integer times, rep, hits;
 reg vacant, hit;
 integer sum [LINE - 1:0];
 
@@ -50,6 +50,7 @@ initial
         rhit = 1'b0;
         whit = 1'b0;
         times = 0;
+        hits = 0;
     end
 
 always@(posedge clk)
@@ -141,11 +142,15 @@ if(state == cachefetch & (re | we))
                         if(cachetable[Addr[OFFSET + SET - 1:OFFSET]][k][8 - SET - OFFSET])
                             begin
                                 if(we)
-                                    whit = 1'b1;
+                                    begin
+                                        whit = 1'b1;
+                                        hits = hits + 1;
+                                    end
                                 else if(re)
                                     begin
                                         rd = cachedata[Addr[OFFSET + SET - 1:OFFSET]][k][Addr[OFFSET - 1:0]];
                                         rhit = 1'b1;
+                                        hits = hits + 1;
                                     end
                             end
                         else

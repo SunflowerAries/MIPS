@@ -1,11 +1,11 @@
 module datapath(input clk, clk190, reset, waitinstr, waitdata,
                 input memtoregE, memtoregM, memtoregW, 
-                input pcsrcD, 
+                input pcsrcD, push_regD, 
                 input [1:0] branchD,
                 input alusrcE, regdstE, 
                 input regwriteE, regwriteM, regwriteW, 
                 input [1:0] jumpD, 
-                input expD, ret,
+                input expD, ret, atom_memwriteE,
                 input [3:0] alucontrolE,
                 output equalD, stallE, stallM, stallW,
                 output [31:0] pcF, 
@@ -13,14 +13,14 @@ module datapath(input clk, clk190, reset, waitinstr, waitdata,
                 output [31:0] aluoutM, writedataM, 
                 input [31:0] readdataM, 
                 output [5:0] opD, functD, 
-                output flushE, 
+                output flushE, lockM,
                 input [4:0] switch,
                 output [6:0] S,
                 output [7:0] AN);
 
 wire forwardaD, forwardbD;
 wire [1:0] forwardaE, forwardbE;
-wire stallF, stallD;
+wire stallF, stallD, lock;
 wire [4:0] rsD, rtD, rdD, shamtD, rsE, rtE, rdE, shamtE;
 wire [4:0] writeregE, writeregM, writeregW;
 wire flushF, flushD, branpredF, branpredD;
@@ -29,11 +29,11 @@ wire [31:0] signimmD, signimmE, signimmshD;
 wire [31:0] srcaD, srca2D, srcaE, srca2E;
 wire [31:0] srcbD, srcb2D, srcbE, srcb2E, srcb3E;
 wire [31:0] pcplus4D, instrD, pcbrpred;
-wire [31:0] aluoutE, aluoutW;
+wire [31:0] aluoutE, aluoutW, aluout2E;
 wire [31:0] readdataW, resultW;
 wire [15:0] Real;
 
-Display Display(clk190, {pcF[15:0], Real}, S, AN, reset);
+Display Display(clk190, {pcF[7:0], aluoutM[9:2], Real}, S, AN, reset);
 
 hazard haz(rsD, rtD, rsE, rtE, writeregE, writeregM, writeregW,
            regwriteE, regwriteM, regwriteW, waitinstr, waitdata,
@@ -46,7 +46,7 @@ BPB BPB(clk, reset, stallD, instrF[31:27], pcF[7:0], pcbranchD, pcsrcD, branpred
 mux2 #(32) pcbrmux(pcplus4F, pcbranchD, pcsrcD & (~branpredD), pcnextbrFD);
 mux2 #(32) pcmux(pcnextbrFD, {pcplus4D[31:28], instrD[25:0], 2'b00}, jumpD[1], pcnextjmpFD);
 
-regfile rf(clk, regwriteW, jumpD[0], rsD, rtD, writeregW, resultW, pcF, srcaD, srcbD, reset, switch, Real);
+regfile rf(clk, regwriteW, jumpD[0], push_regD, atom_memwriteE, rsD, rtD, writeregW, resultW, pcF, srcaD, srcbD, reset, switch, Real, lock);
 mux2 #(32) pcjrmux(pcnextjmpFD, srca2D, ret, pcnextFDbefp);
 mux2 #(32) pcpred(pcnextFDbefp, pcbrpred, branpredF, pcnextFD);
 
@@ -86,10 +86,11 @@ mux3 #(32) forwardbemux(srcbE, resultW, aluoutM, forwardbE, srcb2E); // resultW 
 mux2 #(32) srcbmux(srcb2E, signimmE, alusrcE, srcb3E);
 alu alu(srca2E, srcb3E, alucontrolE, aluoutE, shamtE);
 mux2 #(5) wrmux(rtE, rdE, regdstE, writeregE);
+mux3 #(32) alumux(32'b1, 32'b0, aluoutE, {~atom_memwriteE, lock}, aluout2E);
 
 flopenr #(32) r1M(clk, reset, ~stallM, srcb2E, writedataM); //store
-flopenr #(32) r2M(clk, reset, ~stallM, aluoutE, aluoutM);
-flopenr #(5) r3M(clk, reset, ~stallM, writeregE, writeregM);
+flopenr #(32) r2M(clk, reset, ~stallM, aluout2E, aluoutM);
+flopenr #(6) r3M(clk, reset, ~stallM, {writeregE, lock}, {writeregM, lockM});
 
 flopenr #(32) r1W(clk, reset, ~stallW, aluoutM, aluoutW);
 flopenr #(32) r2W(clk, reset, ~stallW, readdataM, readdataW);
