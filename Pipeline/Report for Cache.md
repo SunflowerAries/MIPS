@@ -218,20 +218,66 @@ assign flushD = (pcsrcD & ~stallD & ~branpredD) | jumpD[0] | jumpD[1] | ret | (~
 
 　　具体测试代码见<a style="text-decoration:none;" href="https://github.com/SunflowerAries/MIPS/tree/master/example">我的Github</a>。
 
-## 4 申A理由
+## 4 锁的实现
+
+　　本来我希望在流水线中引入多线程为并发操作提供硬件支持，后来发现MIPS中多线程的实现需要OS的调度以及C库的软件支持，并且MIPS中出现exception时需要繁琐的压栈处理。因此与老师讨论后，我决定通过jal，jr等指令简单模拟多线程的切换(测试样例因时间原因暂时没有构造出来，我会在考试结束后将样例放在<a style="text-decoration:none;" href="https://github.com/SunflowerAries/MIPS/tree/master/example">我的Github上</a>)。实际上，多线程的引入是为了提高CPU的效率，当程序需要进行I/O操作时，为了减少CPU空闲，可以将CPU切换到另一个任务(线程)执行。
+
+　　多线程执行时的一个关键是共享变量的一致性问题：即当多个程序对缓存中的同一单元读写时，不同的执行过程可能得到不同的结果。一个办法是对缓存中的该单元加锁：当一个线程对一个单元更新时，需要保证在他从该单元读出数据进行相应运算并最终更新该单元的过程中没有其他线程对该单元进行更新，即满足原子性。MIPS指令集提供了两条指令来实现锁的机制：LL(Load linked word)、SC(store conditional)。
+
+　　下面结合Youbute上台湾国立云林科技大学的朱宗贤老师给出的样例进行说明。下述指令中，需要比较从0(\$a1)中读出的\$t0与\$a2的值的大小，并将大的结果写回0(\$a1)中，显然当只有一个线程执行时，结果是正确的；但如果有两个线程时，因为不同的线程共享内存，但有不同的寄存器组，假设从0(\$a1)中读出存入\$t0的值为0，Processor 1中\$a2的值为3，Processor 2中\$a2的值为2，则最终写入0(\$a1)的为2，但如果串行执行时显然结果应该为3。原因在于并行执行时，Processor 2在写入时不知道Processor 1已经对0(\$a1)中的值进行了修改。
+
+```
+		Processor 1									Processor 2
+	try: lw $t0, 0($a1)
+    	 slt $t1, $t0, $a2						try: lw $t0, 0($a1)
+		 beqz $t1, skip								 slt $t1, $t0, $a2
+		 sw $a2, 0($a1)							     beqz $t1, skip
+	skip:								 			 sw $a2, 0($a1)
+		 										skip:
+```
+
+LL，SW指令的形式如下：
+
+```
+    LL rt, offset($reg)
+    SW rt, offset($reg)
+```
+
+　　LL指令与LW指令的区别就是需要额外记录一些读出数据的信息(如读出数据的地址或作为基地址的寄存器)，SC指令与SW指令的区别就是当写入数据时需要先判断在LL与SC指令之间是否有其他线程更新该内存单元，如果没有则将寄存器rt中的值写入内存并将rt置为1(写入成功)，否则不写入内存并且将rt置为0(写入失败)。
+
+　　考虑到一个线程可能申请多个锁，所以维护一个表来记录信息是最合适的，但我做了简化——即假设不会同时存在多个锁并且多个线程只能竞争同一个内存单元，因此我只需要记录是否有锁即可。当处理LL指令时除了像LW指令一样从内存中读出数据还需要在Decode阶段regfile中加锁，即置lock为1(如果需要维护表，则还需记录作为基地址的寄存器)。当处理SC指令时，还需要对寄存器rt赋值，因此可能会涉及转发逻辑，还需要设置写寄存器信号。SC指令在Memory阶段更新内存时需要判断此时是否有锁(lock ?= 1)，有锁则没有其他线程更新内存，将rt中的结果写入内存并解除锁(lock置为0，将aluout置为1)；没有锁则其他线程已经更新过内存，因此需要从内存中读出新的值进行相关操作再更新内存，此时将aluout置为0。
+
+　　下面来看一下上述样例的加锁版本，Processor 1在准备更新内存时发现此时lock为1，表示没有其他线程对内存做了更新，因此将\$t0写入内存，Processor 2准备更新内存时发现此时锁已经解除，所以更新失败，\$t0被置为0，Processor 2跳转至try，重新从内存中读出新的值进行相应操作，显然一致性得到了保证。
+
+```
+		Processor 1									Processor 2
+	try: ll $t0, 0($a1)
+    	 slt $t1, $t0, $a2						try: ll $t0, 0($a1)
+		 beqz $t1, skip								 slt $t1, $t0, $a2
+		 mov $to, $a2								 beqz $t1, skip
+		 sc $t0, 0($a1)								 mov $to, $a2
+		 beqz $t0, try								 sc $t0, 0($a1)
+    skip:	 									     beqz $t0, try
+		 										skip:
+```
+
+## 5 申A理由
 
 1. 构造测试样例：stride_1，stride_2，stride_4，stride_8，stride_16，bubble sort来测试Cache效果。
 2. 帮助多名同学debug以完成Cache的设计。
 3. 完成了iCache，dCache的设计，其中dCache支持动态调节参数，并且Cache（经过大量调整）与上一阶段的动态预测机制BPB适配良好。
-4. 报告中除Figure 2以外图片均为自己绘制以加深理解。
+4. 报告中除Figure 3以外图片均为自己绘制以加深理解。
+5. 加入LL、SC指令实现了简单的锁。
 
-## 5 致谢
+## 6 致谢
 
 1. 非常感谢张作柏同学无私贡献出<a style="text-decoration:none;" href="https://github.com/Oxer11/MIPS/tree/master/Assembler/assembler.py">译码器</a>使得生成测试样例的效率极大提高。
-2. Mitu Raj等人就latch问题在<a style="text-decoration:none;" href=" https://electronics.stackexchange.com/questions/343146/how-do-i-eliminate-latches-in-fsm-verilog-implementation">StackExchange</a>上的讨论给我提供了很多帮助。
-3. 袁春风著的《计算机组成与系统结构》为我的报告内容提供了框架思路并且我还参考了书中的表述方式，引用了书中的图片：Figure 2。
+2. Mitu Raj等人就latch问题在<a style="text-decoration:none;" href="https://electronics.stackexchange.com/questions/343146/how-do-i-eliminate-latches-in-fsm-verilog-implementation">StackExchange</a>上的讨论给我提供了很多帮助。
+3. 袁春风著的《计算机组成与系统结构》为我的报告内容提供了框架思路并且我还参考了书中的表述方式，引用了书中的图片：Figure 3。
+4. 非常感谢台湾国立云林科技大学的朱宗贤老师在Youtube上<a style="text-decoration:none;" href="https://www.youtube.com/watch?v=QPpTBjf4Yrk">对LL和SC指令的讲解</a>
 
-## 6 参考文献
+
+## 7 参考文献
 
 1. 袁春风. 计算机组成与系统结构
 2. Randal E. Bryant, David R. O’Hallaron. Computer Systems: A Programmer’s Perspective
